@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Build your own plan</title>
+<style>
+:root {
+  --bg: #f2f4f0; --surface: #ffffff; --ink: #1d211d; --muted: #5f675f; --line: #d8ddd5;
+  --accent: #1f6f5c; --accent-soft: #dcefe8; --chip: #eef4ec; --chip-line: #b3c4ac;
+  --male: #2f6fbf; --female: #c0407a; --warn: #8a5a00; --warn-bg: #fff1c9; --bad: #9b1c1c; --bad-bg: #fbe0e0; --ok: #1f7a4d;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131714; --surface: #1b201c; --ink: #e8ece6; --muted: #98a298; --line: #2f372f;
+    --accent: #5fc2a5; --accent-soft: #1f342d; --chip: #2a3329; --chip-line: #46543f;
+    --male: #6aa6ee; --female: #e57fb0; --warn: #f0c26b; --warn-bg: #3a2f12; --bad: #ff9c9c; --bad-bg: #3d1d1d; --ok: #6fd6a0;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.45;
+  padding: 20px max(16px, env(safe-area-inset-right)) 60px max(16px, env(safe-area-inset-left));
+}
+.wrap { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+a { color: var(--accent); }
+h1 { margin: 0; font-size: 28px; line-height: 1.15; }
+h2 { margin: 0 0 8px; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.sub { margin: 4px 0 0; color: var(--muted); }
+header { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; align-items: flex-end; }
+.status { font-size: 12px; color: var(--muted); font-family: ui-monospace, monospace; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 8px 14px; border-radius: 8px; font-weight: 600; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; min-width: 0; }
+.notice { border-radius: 10px; background: var(--warn-bg); color: var(--warn); padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+.notice[hidden] { display: none; }
+.notice.good { background: var(--accent-soft); color: var(--ink); }
+.steps { margin: 0; padding-left: 20px; color: var(--muted); }
+.kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
+.kpi .l { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.kpi .v { font-family: ui-monospace, monospace; font-size: 24px; font-variant-numeric: tabular-nums; }
+.builder { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 800px) { .builder { grid-template-columns: minmax(0, 1fr); } }
+.pool { position: sticky; top: 8px; max-height: calc(100vh - 16px); display: flex; flex-direction: column; }
+@media (max-width: 800px) { .pool { position: static; max-height: none; } }
+.pool .list { overflow-y: auto; min-height: 60px; max-height: 480px; }
+input[type=search], input[type=text] { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); margin-bottom: 8px; }
+.zone { border: 2px dashed var(--line); border-radius: 12px; padding: 10px; background: var(--surface); min-width: 0; transition: border-color .1s, background .1s; }
+.zone.over { border-color: var(--accent); background: var(--accent-soft); border-style: solid; }
+.zone .zt { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 700; margin-bottom: 8px; }
+.zone .zt .n { font-family: ui-monospace, monospace; color: var(--muted); font-weight: 500; }
+.zone .drop { display: flex; flex-wrap: wrap; gap: 6px; min-height: 34px; align-content: flex-start; }
+.zone .none { color: var(--muted); font-size: 13px; align-self: center; }
+.here { border: 1px solid var(--accent); background: var(--accent-soft); color: var(--ink); border-radius: 999px; padding: 2px 10px; font-size: 13px; font-weight: 600; }
+.rooms { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.right { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.dchip { border: 1px solid var(--chip-line); background: var(--chip); border-radius: 999px; padding: 5px 11px; display: inline-flex; gap: 6px; align-items: center; font-size: 14px; touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.dchip:hover { border-color: var(--accent); }
+.dchip[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.dchip.ghost { position: fixed; z-index: 99; pointer-events: none; opacity: .92; box-shadow: 0 6px 18px rgba(0,0,0,.3); }
+.dchip.lifted { opacity: .35; }
+.sx { width: 9px; height: 9px; border-radius: 50%; background: var(--line); flex: none; }
+.sx.M { background: var(--male); } .sx.F { background: var(--female); border-radius: 2px; transform: rotate(45deg); }
+.legend { color: var(--muted); font-size: 12px; margin-top: 6px; display: flex; gap: 14px; flex-wrap: wrap; }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.movebar { position: sticky; top: 0; z-index: 5; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.pub { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0 12px; }
+label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
+.small { font-size: 13px; color: var(--muted); }
+.trap { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.builds { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.build { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.build h3 { margin: 0; font-size: 17px; overflow-wrap: anywhere; }
+.build details summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+.build ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; }
+.build .go { margin-top: auto; align-self: flex-start; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Build your own plan</h1>
+      <p class="sub">Try out who could live where at the New Haven. Nothing here changes the real plan.</p>
+    </div>
+    <span class="status" id="status">Loading the dog list…</span>
+  </header>
+
+  <div class="notice" id="notice" hidden><span id="noticeText"></span><span class="row" id="noticeBtns"></span></div>
+
+  <div class="card">
+    <h2>How it works</h2>
+    <ol class="steps">
+      <li>Drag dogs from <b>All dogs</b> into <b>Coming to the New Haven</b>.</li>
+      <li>Drag them from there into a room or yard. You can move them again any time.</li>
+      <li>Happy? Give your plan a name and publish it for others to see.</li>
+    </ol>
+    <p class="small" style="margin:8px 0 0">On a phone, press and hold a dog, then drag. Or just tap a dog and then tap <b>Put here</b> on the place you want.</p>
+  </div>
+
+  <div class="kpis" aria-label="Summary">
+    <div class="kpi"><div class="l">Coming to New Haven</div><div class="v" id="kChosen">0</div></div>
+    <div class="kpi"><div class="l">In a room or yard</div><div class="v" id="kPlaced">0</div></div>
+    <div class="kpi"><div class="l">Not in a room yet</div><div class="v" id="kWaiting">0</div></div>
+  </div>
+
+  <div class="card movebar" id="moveBar" hidden></div>
+
+  <div class="builder">
+    <section class="card pool" aria-label="All dogs">
+      <h2>All dogs <span id="poolN"></span></h2>
+      <input type="search" id="search" placeholder="Find a dog…" aria-label="Find a dog" autocomplete="off">
+      <div class="zone list" data-zone="pool"><div class="drop" id="poolDrop"></div></div>
+      <div class="legend"><span><i class="sx M"></i>Male</span><span><i class="sx F"></i>Female</span><span><i class="sx"></i>Not listed</span></div>
+      <div class="row" style="margin-top:8px"><button class="btn" id="fromSheet" type="button">Start with the dogs planned for New Haven</button></div>
+    </section>
+
+    <div class="right">
+      <div class="zone" data-zone="chosen" id="chosenZone"></div>
+      <div class="rooms" id="rooms"></div>
+      <div class="row">
+        <button class="btn" id="clear" type="button">Start again</button>
+        <span class="small" id="saved"></span>
+      </div>
+    </div>
+  </div>
+
+  <section class="card" aria-label="Publish your plan">
+    <h2>Publish your plan</h2>
+    <p class="small" style="margin-top:0">Published plans are <b>public</b>: anyone with the link can see the plan name, your name if you add one, and the dog names in each room. Please don't put anything private in the name.</p>
+    <form id="pubForm" class="pub" autocomplete="off">
+      <div><label for="pTitle">Plan name (required)</label><input type="text" id="pTitle" maxlength="60" placeholder="e.g. Calm Room 2 idea"></div>
+      <div><label for="pAuthor">Your first name (optional)</label><input type="text" id="pAuthor" maxlength="40"></div>
+      <div class="trap" aria-hidden="true"><label for="pWeb">Leave this empty</label><input type="text" id="pWeb" tabindex="-1" autocomplete="off"></div>
+    </form>
+    <div class="row"><button class="btn primary" id="publish" type="button">Publish my plan</button><span class="small" id="pubMsg" role="status"></span></div>
+  </section>
+
+  <section class="card" aria-label="Published plans">
+    <h2>Plans other people have published <span id="buildsN"></span></h2>
+    <p class="small" id="buildsMsg" style="margin-top:0"></p>
+    <div class="builds" id="builds"></div>
+  </section>
+</div>
+
+<script src="config.js"></script>
+<script>
+(function () {
+  var CFG = window.HAVEN_BUILD_CONFIG || {};
+  var SAMPLE = /[?&]sample=1/.test(location.search);
+  var DOGS_URL = SAMPLE ? 'sample/dogs.csv' : (CFG.DOGS_CSV_URL || '');
+  var API = SAMPLE ? 'sample/builds.json' : (CFG.BUILDS_API_URL || '');
+  var POLL_MS = (CFG.POLL_SECONDS || 60) * 1000;
+  var STORE = SAMPLE ? 'haven-build-draft-sample' : 'haven-build-draft-v1';
+
+  var ROOMS = [
+    { id: 'room1', name: 'Room 1' }, { id: 'room2', name: 'Room 2' }, { id: 'room3', name: 'Room 3' },
+    { id: 'room4', name: 'Room 4' }, { id: 'room5', name: 'Room 5' }, { id: 'room6', name: 'Room 6' },
+    { id: 'terrace', name: 'Terrace' }, { id: 'yardA', name: 'Yard A' }, { id: 'yardB', name: 'Yard B' },
+    { id: 'yardC', name: 'Yard C interlock' }, { id: 'yardD', name: 'Yard D' }, { id: 'yardE', name: 'Yard E' }
+  ];
+  var ROOM_NAME = { chosen: 'Coming to the New Haven', pool: 'All dogs' };
+  ROOMS.forEach(function (r) { ROOM_NAME[r.id] = r.name; });
+
+  var S = { dogs: [], info: {}, planned: [], place: {}, sel: null, search: '', builds: [], undo: null };
+  var drag = null, suppressClick = false;
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function short(n) { return String(n).replace(/\s*\(.*?\)\s*/g, ' ').trim() || n; }
+  function clock(t) { return new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+  function zoneOf(name) { return S.place[name] || 'pool'; }
+  function sex(name) { var g = String((S.info[name] || {}).gender || '').trim().toUpperCase(); return g === 'M' || g === 'F' ? g : ''; }
+  function sexWord(g) { return g === 'M' ? 'male' : g === 'F' ? 'female' : 'sex not listed'; }
+
+  // ---------- CSV ----------
+  function parseCsv(text) {
+    var rows = [], row = [], f = '', q = false, i, c;
+    text = String(text).replace(/^﻿/, '');
+    for (i = 0; i < text.length; i++) {
+      c = text[i];
+      if (q) { if (c === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+      else if (c === '"') q = true;
+      else if (c === ',') { row.push(f); f = ''; }
+      else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(f); f = ''; rows.push(row); row = []; }
+      else f += c;
+    }
+    if (f !== '' || row.length) { row.push(f); rows.push(row); }
+    return rows;
+  }
+  function fetchText(url) {
+    var u = url + (url.indexOf('?') < 0 ? '?' : '&') + '_=' + Date.now();
+    return fetch(u, { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); });
+  }
+
+  // ---------- notices ----------
+  function notice(text, good, buttons) {
+    $('noticeText').textContent = text || '';
+    $('notice').hidden = !text;
+    $('notice').className = 'notice' + (good ? ' good' : '');
+    var box = $('noticeBtns'); box.innerHTML = '';
+    (buttons || []).forEach(function (b) {
+      var el = document.createElement('button'); el.type = 'button'; el.className = 'btn'; el.textContent = b.label; el.addEventListener('click', b.fn); box.appendChild(el);
+    });
+  }
+
+  // ---------- dog list ----------
+  var lastDogsJson = '', dogsOk = 0;
+  function loadDogs() {
+    if (!DOGS_URL) { $('status').textContent = 'No dog list connected yet'; notice('This page has no dog list yet. Add the Dog Database link to config.js.'); return Promise.resolve(); }
+    return fetchText(DOGS_URL).then(parseCsv).then(function (rows) {
+      var head = (rows[0] || []).map(function (h) { return String(h).trim().toLowerCase(); });
+      var iN = head.indexOf('dog name'), iP = head.indexOf('proposed location'), iG = head.indexOf('gender'), iC = head.indexOf('current location');
+      if (iN < 0) throw new Error('layout');
+      var dogs = [], info = {}, planned = [];
+      rows.slice(1).forEach(function (r) {
+        var n = String(r[iN] || '').trim(); if (!n || info[n]) return;
+        dogs.push(n);
+        info[n] = { gender: iG >= 0 ? r[iG] : '', current: iC >= 0 ? r[iC] : '' };
+        if (iP >= 0 && /new haven/i.test(r[iP] || '')) planned.push(n);
+      });
+      dogs.sort(function (a, b) { return short(a).localeCompare(short(b)); });
+      var j = JSON.stringify([dogs, info]);
+      dogsOk = Date.now();
+      $('status').textContent = 'Dog list updated ' + clock(dogsOk);
+      if (j !== lastDogsJson) {
+        lastDogsJson = j; S.dogs = dogs; S.info = info; S.planned = planned;
+        Object.keys(S.place).forEach(function (n) { if (!info[n]) delete S.place[n]; });
+        if (!drag) render();
+      }
+      if (!$('notice').hidden && /dog list/i.test($('noticeText').textContent)) notice('');
+    }).catch(function (e) {
+      if (dogsOk) $('status').textContent = "Couldn't refresh, showing dogs from " + clock(dogsOk);
+      else { $('status').textContent = "Couldn't load the dog list"; notice(e && e.message === 'layout' ? 'The dog list tab does not have a "Dog Name" column.' : 'The dog list could not be reached. Check your connection and try again in a minute.'); }
+    });
+  }
+
+  // ---------- rendering ----------
+  function chip(name, extra) {
+    var g = sex(name);
+    return '<button type="button" class="dchip" data-dog="' + esc(name) + '" aria-pressed="' + (S.sel === name) + '" aria-label="' + esc(short(name) + ', ' + sexWord(g)) + '"' + (extra || '') + '><i class="sx ' + g + '"></i>' + esc(short(name)) + '</button>';
+  }
+  function putHere(zone) {
+    if (!S.sel || zoneOf(S.sel) === zone) return '';
+    return '<button type="button" class="here" data-put="' + zone + '">Put ' + esc(short(S.sel)) + ' here</button>';
+  }
+  function dogsIn(zone) { return S.dogs.filter(function (n) { return zoneOf(n) === zone; }); }
+  function render() {
+    var q = S.search.trim().toLowerCase();
+    var pool = dogsIn('pool'), shownPool = q ? pool.filter(function (n) { return n.toLowerCase().indexOf(q) >= 0; }) : pool;
+    $('poolN').textContent = '(' + pool.length + ')';
+    $('poolDrop').innerHTML = shownPool.length ? shownPool.map(function (n) { return chip(n); }).join('') :
+      '<span class="none">' + (S.dogs.length ? (q ? 'No dog with that name.' : 'Everyone has been picked.') : 'No dogs loaded yet.') + '</span>';
+    var chosen = dogsIn('chosen');
+    $('chosenZone').innerHTML = '<div class="zt"><span>Coming to the New Haven, not in a room yet</span><span class="n">' + chosen.length + '</span></div><div class="drop">' +
+      (chosen.length ? chosen.map(function (n) { return chip(n); }).join('') : '<span class="none">Drag dogs here from the list.</span>') + '</div>' + putHere('chosen');
+    $('rooms').innerHTML = ROOMS.map(function (r) {
+      var d = dogsIn(r.id);
+      return '<div class="zone" data-zone="' + r.id + '"><div class="zt"><span>' + esc(r.name) + '</span><span class="n">' + d.length + '</span></div><div class="drop">' +
+        (d.length ? d.map(function (n) { return chip(n); }).join('') : '<span class="none">Empty</span>') + '</div>' + putHere(r.id) + '</div>';
+    }).join('');
+    var placed = S.dogs.filter(function (n) { var z = zoneOf(n); return z !== 'pool' && z !== 'chosen'; }).length;
+    $('kChosen').textContent = chosen.length + placed;
+    $('kPlaced').textContent = placed;
+    $('kWaiting').textContent = chosen.length;
+    var bar = $('moveBar');
+    if (S.sel) {
+      bar.hidden = false;
+      bar.innerHTML = '<div class="row"><span>Moving <b>' + esc(short(S.sel)) + '</b>. Tap <b>Put here</b> on the place you want' + (zoneOf(S.sel) !== 'pool' ? ', or send them back to the list' : '') + '.</span>' +
+        (zoneOf(S.sel) !== 'pool' ? '<button type="button" class="here" data-put="pool">Back to the list</button>' : '') + '<button type="button" class="btn" data-cancel="1">Cancel</button></div>';
+    } else bar.hidden = true;
+    var q2 = S.search; // keep search box content
+    if ($('search').value !== q2) $('search').value = q2;
+    renderBuilds();
+    save();
+  }
+
+  // ---------- moving dogs ----------
+  function moveDog(name, zone) {
+    if (!S.info[name]) return;
+    if (zone === 'pool') delete S.place[name]; else S.place[name] = zone;
+    S.sel = null; S.undo = null;
+    render();
+  }
+  document.addEventListener('click', function (e) {
+    if (suppressClick) { suppressClick = false; return; }
+    var t = e.target.closest ? e.target.closest('[data-put],[data-cancel],.dchip,[data-open],[data-undo]') : null;
+    if (!t) return;
+    if (t.hasAttribute('data-put')) { if (S.sel) moveDog(S.sel, t.getAttribute('data-put')); }
+    else if (t.hasAttribute('data-cancel')) { S.sel = null; render(); }
+    else if (t.classList.contains('dchip')) { var n = t.getAttribute('data-dog'); S.sel = S.sel === n ? null : n; render(); var again = document.querySelector('.dchip[aria-pressed="true"]'); if (again) again.focus(); }
+    else if (t.hasAttribute('data-open')) openBuild(t.getAttribute('data-open'));
+  });
+  $('search').addEventListener('input', function () { S.search = this.value; render(); $('search').focus(); });
+
+  // Press-and-drag (mouse and touch). Touch needs a short hold so scrolling still works.
+  document.addEventListener('pointerdown', function (e) {
+    var c = e.target.closest ? e.target.closest('.dchip') : null;
+    if (!c || c.classList.contains('ghost') || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    drag = { name: c.getAttribute('data-dog'), el: c, x: e.clientX, y: e.clientY, id: e.pointerId, touch: e.pointerType !== 'mouse', on: false, ghost: null, over: null, timer: null };
+    if (drag.touch) drag.timer = setTimeout(function () { if (drag) startDrag(drag.x, drag.y); }, 260);
+  });
+  function startDrag(x, y) {
+    if (!drag || drag.on) return;
+    drag.on = true; clearTimeout(drag.timer);
+    var g = drag.el.cloneNode(true); g.classList.add('ghost'); g.removeAttribute('aria-pressed'); document.body.appendChild(g);
+    drag.ghost = g; drag.el.classList.add('lifted'); place(x, y);
+    if (navigator.vibrate) try { navigator.vibrate(15); } catch (e) {}
+  }
+  function place(x, y) {
+    var g = drag.ghost; g.style.left = (x - g.offsetWidth / 2) + 'px'; g.style.top = (y - g.offsetHeight - 10) + 'px';
+    var hit = document.elementFromPoint(x, y), z = hit && hit.closest ? hit.closest('[data-zone]') : null;
+    if (drag.over && drag.over !== z) drag.over.classList.remove('over');
+    if (z) z.classList.add('over');
+    drag.over = z;
+  }
+  document.addEventListener('pointermove', function (e) {
+    if (!drag || e.pointerId !== drag.id) return;
+    var moved = Math.hypot(e.clientX - drag.x, e.clientY - drag.y);
+    if (!drag.on) {
+      if (drag.touch) { if (moved > 10) { clearTimeout(drag.timer); drag = null; } else { drag.x = e.clientX; drag.y = e.clientY; } return; }
+      if (moved > 5) startDrag(e.clientX, e.clientY); else return;
+    }
+    place(e.clientX, e.clientY);
+  });
+  document.addEventListener('touchmove', function (e) { if (drag && drag.on && e.cancelable) e.preventDefault(); }, { passive: false });
+  function endDrag(drop) {
+    if (!drag) return;
+    clearTimeout(drag.timer);
+    var d = drag; drag = null;
+    if (!d.on) return;
+    suppressClick = true; setTimeout(function () { suppressClick = false; }, 0);
+    d.ghost.remove(); d.el.classList.remove('lifted');
+    if (d.over) d.over.classList.remove('over');
+    if (drop && d.over) moveDog(d.name, d.over.getAttribute('data-zone')); else render();
+  }
+  document.addEventListener('pointerup', function (e) { if (drag && e.pointerId === drag.id) endDrag(true); });
+  document.addEventListener('pointercancel', function (e) { if (drag && e.pointerId === drag.id) endDrag(false); });
+  document.addEventListener('contextmenu', function (e) { if (drag && drag.on) e.preventDefault(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { if (drag && drag.on) endDrag(false); else if (S.sel) { S.sel = null; render(); } } });
+
+  $('fromSheet').addEventListener('click', function () {
+    if (!S.planned.length) { notice('The dog list does not say which dogs are planned for the New Haven.'); return; }
+    var before = JSON.stringify(S.place);
+    S.planned.forEach(function (n) { if (zoneOf(n) === 'pool') S.place[n] = 'chosen'; });
+    S.undo = before; render(); notice('Added ' + S.planned.length + ' dogs from the sheet.', true, [{ label: 'Undo', fn: undo }]);
+  });
+  function undo() { if (S.undo == null) return; S.place = JSON.parse(S.undo); S.undo = null; notice(''); render(); }
+  $('clear').addEventListener('click', function () {
+    if (!Object.keys(S.place).length) return;
+    S.undo = JSON.stringify(S.place); S.place = {}; S.sel = null; render();
+    notice('Plan cleared.', true, [{ label: 'Undo', fn: undo }]);
+  });
+
+  // ---------- saving on this device ----------
+  function save() {
+    try { localStorage.setItem(STORE, JSON.stringify(S.place)); $('saved').textContent = Object.keys(S.place).length ? 'Saved on this device' : ''; } catch (e) {}
+  }
+  function restore() { try { var v = JSON.parse(localStorage.getItem(STORE) || 'null'); if (v && typeof v === 'object') S.place = v; } catch (e) {} }
+
+  // ---------- publishing ----------
+  function currentPlan() {
+    var out = {}; S.dogs.forEach(function (n) { var z = zoneOf(n); if (z !== 'pool') (out[z] = out[z] || []).push(n); }); return out;
+  }
+  var pubBusy = false;
+  $('publish').addEventListener('click', function () {
+    var title = $('pTitle').value.trim(), plan = currentPlan(), n = Object.keys(plan).reduce(function (a, z) { return a + plan[z].length; }, 0);
+    var msg = $('pubMsg');
+    if (!API || SAMPLE) { msg.textContent = SAMPLE ? 'This is the sample page, so nothing is really published.' : "Publishing isn't switched on yet. Your plan is still saved on this device."; return; }
+    if (!title) { msg.textContent = 'Please give your plan a name first.'; $('pTitle').focus(); return; }
+    if (!n) { msg.textContent = 'Add at least one dog to the New Haven first.'; return; }
+    if (pubBusy) return;
+    pubBusy = true; $('publish').disabled = true; msg.textContent = 'Publishing…';
+    fetch(API, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ title: title, author: $('pAuthor').value.trim(), place: plan, website: $('pWeb').value }) })
+      .then(function () {
+        msg.textContent = 'Published! It should show in the list below in a few seconds.';
+        $('pTitle').value = '';
+        setTimeout(loadBuilds, 2500); setTimeout(loadBuilds, 7000);
+      }).catch(function () { msg.textContent = "Couldn't publish. Check your connection and try again."; })
+      .then(function () { setTimeout(function () { pubBusy = false; $('publish').disabled = false; }, 4000); });
+  });
+
+  // ---------- published plans ----------
+  var buildsOk = 0;
+  function loadBuilds() {
+    if (!API) { $('buildsMsg').textContent = "Publishing isn't switched on yet. Once it is, plans people publish will appear here."; return Promise.resolve(); }
+    return fetchText(API).then(function (t) {
+      var j = JSON.parse(t);
+      if (!j || !Array.isArray(j.builds)) throw new Error('bad');
+      S.builds = j.builds; buildsOk = Date.now(); if (!drag) renderBuilds();
+    }).catch(function () {
+      $('buildsMsg').textContent = buildsOk ? "Couldn't refresh, showing plans from " + clock(buildsOk) : "Couldn't load the published plans right now.";
+    });
+  }
+  function renderBuilds() {
+    var box = $('builds');
+    if (API && buildsOk) $('buildsMsg').textContent = S.builds.length ? 'Updated ' + clock(buildsOk) + '. Open one to look at it or change it.' : 'Nobody has published a plan yet. Be the first!';
+    $('buildsN').textContent = S.builds.length ? '(' + S.builds.length + ')' : '';
+    box.innerHTML = S.builds.map(function (b, i) {
+      var place = b.place || {}, total = 0, inRooms = 0, rows = '';
+      Object.keys(place).forEach(function (z) { var l = place[z] || []; total += l.length; if (z !== 'chosen') inRooms += l.length; });
+      ROOMS.concat([{ id: 'chosen', name: 'Not in a room yet' }]).forEach(function (r) {
+        var l = place[r.id]; if (l && l.length) rows += '<li><b>' + esc(r.name) + ':</b> ' + l.map(function (n) { return esc(short(n)); }).join(', ') + '</li>';
+      });
+      var when = b.time ? new Date(b.time).toLocaleDateString([], { day: 'numeric', month: 'short' }) : '';
+      return '<article class="build"><h3>' + esc(b.title || 'Untitled plan') + '</h3><div class="small">' + (b.author ? 'by ' + esc(b.author) + ' · ' : '') + esc(when) + ' · ' + total + ' dogs, ' + inRooms + ' in rooms</div>' +
+        '<details><summary>See the rooms</summary><ul>' + rows + '</ul></details><button type="button" class="btn go" data-open="' + i + '">Open in the builder</button></article>';
+    }).join('');
+  }
+  function openBuild(i) {
+    var b = S.builds[+i]; if (!b) return;
+    var before = JSON.stringify(S.place), next = {}, missing = 0;
+    Object.keys(b.place || {}).forEach(function (z) {
+      if (z !== 'chosen' && !ROOM_NAME[z]) return;
+      (b.place[z] || []).forEach(function (n) { if (S.info[n]) next[n] = z; else missing++; });
+    });
+    S.place = next; S.sel = null; S.undo = before; render();
+    notice('Opened "' + (b.title || 'Untitled plan') + '" in the builder.' + (missing ? ' ' + missing + ' dog(s) are no longer in the list and were left out.' : ''), true, [{ label: 'Undo', fn: undo }]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ---------- start ----------
+  restore(); render();
+  loadDogs().then(function () { return loadBuilds(); });
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && !drag) { loadDogs(); loadBuilds(); } });
+  setInterval(function () { if (document.visibilityState === 'visible' && !drag) { loadDogs(); loadBuilds(); } }, POLL_MS);
+})();
+</script>
+</body>
+</html>

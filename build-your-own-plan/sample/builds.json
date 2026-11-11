@@ -1,0 +1,4 @@
+{"builds":[
+{"id":"s2","time":"2026-11-10T16:20:00Z","title":"Quiet Room 2 idea","author":"Sample","place":{"chosen":["Telly"],"room1":["Bubu","Blackie"],"room2":["Buster","Kokku"],"yardB":["Muffin"]}},
+{"id":"s1","time":"2026-11-09T09:05:00Z","title":"Everyone in Room 1","author":"","place":{"room1":["Bubu","Blackie","Buster","Kokku","Muffin","Telly"]}}
+]}

@@ -51,3 +51,4 @@ Never edit the Google Sheet unless Julian explicitly asks.
 ## Projects
 
 - `new-haven-plan/`: interactive New Haven site plan with each room's dogs, reading the "New Haven Rooms" tab. Started from `source-plan.html` (built earlier as a Claude artifact).
+- `build-your-own-plan/`: visitors drag dogs from the Dog Database list into the New Haven, then into rooms, and can publish their plan. Published plans are saved by a small Google Apps Script (`apps-script.gs`) into a separate Google Sheet, never haven_dogs. Its web address goes in `config.js` as `BUILDS_API_URL` (public, not a secret). Public data: plan name, optional first name, dog names per room. Julian hides a plan by typing x in the "Hide?" column.
