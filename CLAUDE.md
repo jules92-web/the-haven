@@ -8,8 +8,8 @@ Julian is not a developer. He is the shelter's Wellbeing Manager and works in sh
 
 - One subfolder per project, named in lowercase with hyphens, e.g. `new-haven-plan/`. Each has its own `index.html`.
 - Root `index.html`: a simple landing page listing every project with a one-line description and a link. Keep it updated whenever a project is added or renamed.
-- One GitHub repository for the whole folder, Pages served from the `main` branch root. Repo name: ask Julian the first time, then write it here: `TBC`.
-- Project URLs look like `https://<owner>.github.io/<repo>/<project>/`.
+- One GitHub repository for the whole folder, Pages served from the `main` branch root. Repo name: ask Julian the first time, then write it here: `the-haven` (owner `jules92-web`).
+- Project URLs look like `https://jules92-web.github.io/the-haven/<project>/`.
 
 ## How things are built
 
