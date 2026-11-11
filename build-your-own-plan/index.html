@@ -6,6 +6,7 @@
 <title>Build your own plan</title>
 <style>
 :root {
+  --yard: #dbe8cf; --yard-line: #7f9a6a; --paved: #e5e1d8; --paved-line: #9a948a; --wall: #2b2d2a; --room: #ffffff; --gate: #b57a1e; --planned: #7a3fb0;
   --bg: #f2f4f0; --surface: #ffffff; --ink: #1d211d; --muted: #5f675f; --line: #d8ddd5;
   --accent: #1f6f5c; --accent-soft: #dcefe8; --chip: #eef4ec; --chip-line: #b3c4ac;
   --male: #2f6fbf; --female: #c0407a; --warn: #8a5a00; --warn-bg: #fff1c9; --bad: #9b1c1c; --bad-bg: #fbe0e0; --ok: #1f7a4d;
@@ -13,6 +14,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #131714; --surface: #1b201c; --ink: #e8ece6; --muted: #98a298; --line: #2f372f;
+    --yard: #26382a; --yard-line: #5d7a52; --paved: #34322d; --paved-line: #6d685e; --wall: #d3d7cf; --room: #1f2420; --gate: #e0a43f; --planned: #bb8de3;
     --accent: #5fc2a5; --accent-soft: #1f342d; --chip: #2a3329; --chip-line: #46543f;
     --male: #6aa6ee; --female: #e57fb0; --warn: #f0c26b; --warn-bg: #3a2f12; --bad: #ff9c9c; --bad-bg: #3d1d1d; --ok: #6fd6a0;
     color-scheme: dark;
@@ -83,7 +85,36 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
 .build h3 { margin: 0; font-size: 17px; overflow-wrap: anywhere; }
 .build details summary { cursor: pointer; color: var(--accent); font-weight: 600; }
 .build ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; }
-.build .go { margin-top: auto; align-self: flex-start; }
+.build .go { margin-top: auto; }
+.planbox { overflow-x: auto; }
+.planbox svg { display: block; width: 100%; min-width: 840px; height: auto; }
+svg text { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+.mz .shape { transition: stroke .1s; }
+.mz.over .shape { stroke: var(--accent); stroke-width: 6; fill-opacity: .8; }
+.mz.target { cursor: pointer; }
+.mz.target .shape { stroke: var(--accent); stroke-width: 4; stroke-dasharray: 14 8; }
+.zl { font-size: 22px; font-weight: 700; fill: var(--ink); }
+.zl.dim { font-weight: 600; fill: var(--muted); }
+.zc { font-family: ui-monospace, monospace; font-size: 17px; fill: var(--muted); }
+.zn { font-size: 16px; fill: var(--muted); }
+.schip { cursor: grab; }
+.schip rect.bg { fill: var(--chip); stroke: var(--chip-line); stroke-width: 1; }
+.schip:hover rect.bg { stroke: var(--accent); stroke-width: 2.5; }
+.schip[aria-pressed="true"] rect.bg { stroke: var(--accent); stroke-width: 4; }
+.schip text { fill: var(--ink); }
+.schip .m { fill: var(--male); } .schip .f { fill: var(--female); } .schip .u { fill: var(--line); }
+.schip.lifted { opacity: .35; }
+.more text { fill: var(--muted); font-style: italic; }
+.planned-g[hidden] { display: none; }
+.plegend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; color: var(--muted); font-size: 12px; }
+.plegend span { display: inline-flex; gap: 6px; align-items: center; }
+.sw { width: 18px; height: 10px; border-radius: 2px; display: inline-block; }
+.toggle { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-weight: 400; }
+.toggle input { accent-color: #7a3fb0; width: auto; margin: 0; }
+details.listview summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+details.listview .rooms { margin-top: 10px; }
+.del { margin-top: 4px; }
+.btn.danger { border-color: var(--bad); color: var(--bad); }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>
 </head>
@@ -138,7 +169,20 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
 
     <div class="right">
       <div class="zone" data-zone="chosen" id="chosenZone"></div>
-      <div class="rooms" id="rooms"></div>
+      <section class="card" aria-label="Site plan">
+        <div class="row" style="justify-content:space-between"><h2 style="margin:0">Site plan</h2>
+          <label class="toggle"><input type="checkbox" id="showPlanned" checked> Show planned fences</label></div>
+        <div class="planbox"><svg id="plan" viewBox="0 0 1530 1110" role="group" aria-label="Site plan of the Haven. Drop dogs into rooms and yards."></svg></div>
+        <div class="plegend">
+          <span><i class="sw" style="background:var(--yard);border:1px solid var(--yard-line)"></i>Yard</span>
+          <span><i class="sw" style="background:var(--paved);border:1px solid var(--paved-line)"></i>Interlock / terrace</span>
+          <span><i class="sw" style="background:var(--gate)"></i>Gate</span>
+          <span><i class="sw" style="background:var(--wall);height:4px"></i>Door</span>
+          <span><i class="sw" style="height:0;border-top:3px dashed var(--planned);border-radius:0"></i>Planned fence or gate</span>
+        </div>
+        <p class="small" style="margin:8px 0 0">Not to scale. Front at the bottom. If a room is too full to show every name, open the list below.</p>
+      </section>
+      <details class="card listview"><summary>See every room as a list</summary><div class="rooms" id="rooms"></div></details>
       <div class="small" id="saved"></div>
     </div>
   </div>
@@ -158,6 +202,8 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
     <h2>Plans other people have published <span id="buildsN"></span></h2>
     <p class="small" id="buildsMsg" style="margin-top:0"></p>
     <div class="builds" id="builds"></div>
+    <p class="small" style="margin:12px 0 0"><button type="button" class="btn" data-admin="1" style="padding:4px 10px;font-weight:400">Haven admin</button></p>
+    <div class="row" id="adminBox" hidden style="margin-top:8px"><input type="text" id="adminKey" placeholder="Admin key" style="max-width:240px;margin:0" autocomplete="off"><button type="button" class="btn" id="adminSave">Turn on admin mode</button></div>
   </section>
 </div>
 
@@ -191,6 +237,116 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
   function zoneOf(name) { return S.place[name] || 'pool'; }
   function sex(name) { var g = String((S.info[name] || {}).gender || '').trim().toUpperCase(); return g === 'M' || g === 'F' ? g : ''; }
   function sexWord(g) { return g === 'M' ? 'male' : g === 'F' ? 'female' : 'sex not listed'; }
+  function dogsIn(zone) { return S.dogs.filter(function (n) { return zoneOf(n) === zone; }); }
+
+  // ---------- site plan geometry (same as the New Haven room plan) ----------
+  var AX = [[16,20],[114,128],[124,140],[233,290],[260,330],[334,530],[413,750],[459,880],[479,962],[483,1000],[544,1200],[570,1250],[586,1280],[698,1500]];
+  var AY = [[17,10],[35,60],[81,290],[100,335],[112,364],[144,455],[145,457],[180,535],[200,587],[207,675],[215,732],[233,781],[249,815],[439,1075]];
+  function interp(a, v) { var i = 1; while (i < a.length - 1 && v > a[i][0]) i++; var p = a[i - 1], q = a[i]; return p[1] + (v - p[0]) * (q[1] - p[1]) / (q[0] - p[0]); }
+  function mx(x) { return interp(AX, x); }
+  function my(y) { return interp(AY, y); }
+  function pt(p) { return mx(p[0]).toFixed(1) + ',' + my(p[1]).toFixed(1); }
+  function rectPoly(r) { return [[r[0], r[1]], [r[2], r[1]], [r[2], r[3]], [r[0], r[3]]]; }
+  // drop: true means dogs can be placed here in the builder
+  var MZONES = [
+    { id: 'yardA', name: 'Yard A', kind: 'yard', drop: true, poly: [[24,112],[114,100],[233,100],[233,249],[114,249],[16,215]], box: [34,118,228,246] },
+    { id: 'yardB', name: 'Yard B', kind: 'yard', drop: true, poly: [[124,17],[233,17],[233,100],[124,100]], box: [126,19,231,98] },
+    { id: 'yardD', name: 'Yard D', kind: 'yard', drop: true, poly: [[486,249],[570,249],[586,439],[469,439]], box: [492,252,568,436], note: 'continues ↓' },
+    { id: 'yardE', name: 'Yard E', kind: 'yard', drop: true, poly: [[570,233],[698,233],[698,439],[586,439],[570,249]], box: [592,240,694,436], note: 'continues ↓' },
+    { id: 'yardC', name: 'Yard C interlock', kind: 'strip', drop: true, box: [262,209,542,247] },
+    { id: 'room3', name: 'Room 3', kind: 'room', drop: true, rect: [260,35,334,145] },
+    { id: 'room2', name: 'Room 2', kind: 'room', drop: true, rect: [260,145,334,207] },
+    { id: 'room1', name: 'Room 1', kind: 'room', drop: true, rect: [334,35,413,180] },
+    { id: 'terrace', name: 'Terrace', kind: 'terrace', drop: true, rect: [334,180,413,207] },
+    { id: 'wc', name: 'W.C.', kind: 'room', rect: [413,35,459,81] },
+    { id: 'storage', name: 'Storage', kind: 'room', rect: [459,35,479,81], short: 'S' },
+    { id: 'room6', name: 'Room 6', kind: 'room', drop: true, rect: [479,35,544,81] },
+    { id: 'room5', name: 'Room 5', kind: 'room', drop: true, rect: [413,81,483,144] },
+    { id: 'room4', name: 'Room 4', kind: 'room', drop: true, rect: [413,144,483,207] },
+    { id: 'kitchen', name: 'Kitchen', kind: 'room', rect: [483,81,544,207] }
+  ];
+  MZONES.forEach(function (z) { if (z.rect) { z.poly = rectPoly(z.rect); z.box = z.rect; } });
+  var GATES = [[[23,128],[21,150]],[[204,100],[223,100]],[[233,200],[260,200]],[[260,217],[260,245]],[[544,79],[570,79]],
+    [[570,212],[570,230]],[[570,236],[570,247]],[[551,249],[567,249]],[[360,249],[388,249]]];
+  var DOORS = [[[260,124],[260,133]],[[334,120],[334,129]],[[334,158],[334,167]],[[350,180],[365,180]],[[413,42],[413,51]],
+    [[463,35],[475,35]],[[544,64],[544,73]],[[413,94],[413,103]],[[483,93],[483,102]],[[544,93],[544,102]],[[413,156],[413,165]]];
+  var STAIR_Y = [150,158,165,173,180,188];
+
+  function layoutChips(items, w, h) {
+    var n = items.length, gap = 6, longest = 0;
+    items.forEach(function (i) { longest = Math.max(longest, i.label.length); });
+    var sizes = [22, 21, 20, 19, 18, 17, 16, 15, 14];
+    for (var s = 0; s < sizes.length; s++) {
+      var fs = sizes[s], ch = fs + 14;
+      for (var cols = 1; cols <= 6; cols++) {
+        var cw = (w - (cols - 1) * gap) / cols;
+        if (longest * fs * 0.56 + 36 > cw) continue;
+        if (Math.ceil(n / cols) * (ch + gap) - gap <= h) return { fs: fs, ch: ch, cols: cols, cw: Math.min(cw, longest * fs * 0.6 + 44), shown: items, more: 0 };
+      }
+    }
+    var f = 14, c2 = 28, k = Math.max(1, Math.min(3, Math.floor(w / 110))), cw2 = (w - (k - 1) * gap) / k;
+    var cap = Math.max(1, Math.floor((h + gap) / (c2 + gap))) * k;
+    var shown = n > cap ? items.slice(0, cap - 1) : items, maxChars = Math.max(4, Math.floor((cw2 - 36) / (f * 0.56)));
+    shown = shown.map(function (i) { return { label: i.label.length > maxChars ? i.label.slice(0, maxChars - 1) + '…' : i.label, name: i.name }; });
+    return { fs: f, ch: c2, cols: k, cw: cw2, shown: shown, more: n > cap ? n - (cap - 1) : 0 };
+  }
+  function seg(l, color, w, dash) {
+    return '<line x1="' + mx(l[0][0]).toFixed(1) + '" y1="' + my(l[0][1]).toFixed(1) + '" x2="' + mx(l[1][0]).toFixed(1) + '" y2="' + my(l[1][1]).toFixed(1) +
+      '" stroke="' + color + '" stroke-width="' + w + '"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>';
+  }
+  function badge(x, y, t) {
+    return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="12" fill="var(--planned)"/><text x="' + x.toFixed(1) + '" y="' + (y + 4.5).toFixed(1) + '" text-anchor="middle" font-size="14" font-weight="700" fill="var(--surface)">' + t + '</text>';
+  }
+  function mtext(t, x, y, anchor) { return '<text class="zn" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="' + anchor + '">' + esc(t) + '</text>'; }
+  function mzShape(z) {
+    var fill = z.kind === 'yard' ? 'var(--yard)' : (z.kind === 'room' ? 'var(--room)' : (z.kind === 'terrace' ? 'var(--paved)' : 'transparent'));
+    var stroke = z.kind === 'yard' ? 'var(--yard-line)' : (z.kind === 'room' ? 'var(--wall)' : (z.kind === 'terrace' ? 'var(--paved-line)' : 'transparent'));
+    var sw = z.kind === 'room' ? 3 : 1.5, shape, b = z.box;
+    if (z.kind === 'strip') shape = '<rect class="shape" x="' + mx(b[0]).toFixed(1) + '" y="' + my(b[1]).toFixed(1) + '" width="' + (mx(b[2]) - mx(b[0])).toFixed(1) + '" height="' + (my(b[3]) - my(b[1])).toFixed(1) + '" rx="6" fill="transparent" stroke="transparent"/>';
+    else shape = '<polygon class="shape" points="' + z.poly.map(pt).join(' ') + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="' + sw + '" stroke-linejoin="round"/>';
+    if (!z.drop) return '<g>' + shape + '</g>';
+    var target = S.sel && zoneOf(S.sel) !== z.id ? ' target' : '';
+    return '<g class="mz' + target + '" data-zone="' + z.id + '"' + (target ? ' role="button" tabindex="0" aria-label="Put ' + esc(short(S.sel)) + ' in ' + esc(z.name) + '"' : '') + '>' + shape + '</g>';
+  }
+  function mzContent(z) {
+    var b = z.box, x0 = mx(b[0]), y0 = my(b[1]), x1 = mx(b[2]), y1 = my(b[3]), o = [];
+    var dogs = z.drop ? dogsIn(z.id) : [];
+    o.push('<text class="zl' + (z.drop ? '' : ' dim') + '" x="' + (x0 + 10).toFixed(1) + '" y="' + (y0 + 28).toFixed(1) + '" pointer-events="none">' + esc(z.short || z.name) + '</text>');
+    if (z.note) o.push('<text class="zn" x="' + (x0 + 10).toFixed(1) + '" y="' + (y0 + 52).toFixed(1) + '" pointer-events="none">' + esc(z.note) + '</text>');
+    if (!z.drop) return o.join('');
+    o.push('<text class="zc" x="' + (x1 - 10).toFixed(1) + '" y="' + (y0 + 28).toFixed(1) + '" text-anchor="end" pointer-events="none">' + dogs.length + '</text>');
+    if (!dogs.length) { o.push('<text class="zn" x="' + (x0 + 10).toFixed(1) + '" y="' + (y0 + 54).toFixed(1) + '" pointer-events="none">drop dogs here</text>'); return o.join(''); }
+    var top = y0 + 44, L = layoutChips(dogs.map(function (d) { return { label: short(d), name: d }; }), x1 - x0 - 20, y1 - top - 8);
+    L.shown.forEach(function (it, i) {
+      var c = i % L.cols, r = Math.floor(i / L.cols), cx = x0 + 10 + c * (L.cw + 6), cy = top + r * (L.ch + 6), g = sex(it.name), mid = cy + L.ch / 2;
+      var mark = g === 'F' ? '<rect class="f" x="' + (cx + 8).toFixed(1) + '" y="' + (mid - 5).toFixed(1) + '" width="10" height="10" transform="rotate(45 ' + (cx + 13).toFixed(1) + ' ' + mid.toFixed(1) + ')"/>'
+        : '<circle class="' + (g === 'M' ? 'm' : 'u') + '" cx="' + (cx + 13).toFixed(1) + '" cy="' + mid.toFixed(1) + '" r="5.5"/>';
+      o.push('<g class="schip" data-dog="' + esc(it.name) + '" data-in="' + z.id + '" role="button" tabindex="0" aria-pressed="' + (S.sel === it.name) + '" aria-label="' + esc(short(it.name) + ', ' + sexWord(g)) + '">' +
+        '<rect class="bg" x="' + cx.toFixed(1) + '" y="' + cy.toFixed(1) + '" width="' + L.cw.toFixed(1) + '" height="' + L.ch + '" rx="6"/>' + mark +
+        '<text x="' + (cx + 26).toFixed(1) + '" y="' + (mid + L.fs * 0.35).toFixed(1) + '" font-size="' + L.fs + '">' + esc(it.label) + '</text></g>');
+    });
+    if (L.more) { var idx = L.shown.length; o.push('<g class="more" pointer-events="none"><text x="' + (x0 + 18 + (idx % L.cols) * (L.cw + 6)).toFixed(1) + '" y="' + (top + Math.floor(idx / L.cols) * (L.ch + 6) + L.ch / 2 + 4).toFixed(1) + '" font-size="16">+' + L.more + ' more (see the list)</text></g>'); }
+    return o.join('');
+  }
+  function renderMap() {
+    var out = [];
+    out.push('<rect x="' + mx(233) + '" y="' + my(17) + '" width="' + (mx(570) - mx(233)) + '" height="' + (my(249) - my(17)) + '" fill="var(--paved)" stroke="var(--paved-line)" stroke-width="1.5"/>');
+    ['yard', 'room', 'terrace', 'strip'].forEach(function (k) {
+      MZONES.forEach(function (z) { if (z.kind === k || (k === 'room' && z.kind === 'terrace' && false)) out.push(mzShape(z)); });
+    });
+    STAIR_Y.forEach(function (y) { out.push('<line x1="' + mx(234) + '" x2="' + mx(259) + '" y1="' + my(y) + '" y2="' + my(y) + '" stroke="var(--paved-line)" stroke-width="1.5"/>'); });
+    [[253, 260], [262, 269]].forEach(function (r) { out.push('<rect x="' + mx(360) + '" y="' + my(r[0]) + '" width="' + (mx(388) - mx(360)) + '" height="' + (my(r[1]) - my(r[0])) + '" fill="none" stroke="var(--paved-line)" stroke-width="1.5"/>'); });
+    DOORS.forEach(function (l) { out.push(seg(l, 'var(--wall)', 6)); });
+    GATES.forEach(function (l) { out.push(seg(l, 'var(--gate)', 8)); });
+    out.push('<g class="planned-g" id="plannedG"' + ($('showPlanned').checked ? '' : ' hidden') + ' pointer-events="none">' +
+      seg([[260,17],[260,35]], 'var(--planned)', 6, '10 7') + seg([[233,100],[260,100]], 'var(--planned)', 6, '10 7') +
+      seg([[544,207],[544,222]], 'var(--planned)', 6, '10 7') + seg([[544,222],[544,234]], 'var(--gate)', 8, '6 5') + seg([[544,234],[544,249]], 'var(--planned)', 6, '10 7') +
+      badge(mx(246), my(58) - 4, '1') + badge(mx(534), my(238), '2') + '</g>');
+    out.push(mtext('Interlock', mx(430), 45, 'middle'), mtext('Driveway →', mx(150), my(295), 'start'), mtext('Parking lot ↓', mx(379), my(315), 'middle'));
+    MZONES.forEach(function (z) { out.push(mzContent(z)); });
+    $('plan').innerHTML = out.join('');
+  }
+  $('showPlanned').addEventListener('change', function () { var g = $('plannedG'); if (g) g.hidden = !this.checked; });
 
   // ---------- CSV ----------
   function parseCsv(text) {
@@ -263,7 +419,6 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
     if (!S.sel || zoneOf(S.sel) === zone) return '';
     return '<button type="button" class="here" data-put="' + zone + '">Put ' + esc(short(S.sel)) + ' here</button>';
   }
-  function dogsIn(zone) { return S.dogs.filter(function (n) { return zoneOf(n) === zone; }); }
   function render() {
     var q = S.search.trim().toLowerCase();
     var pool = dogsIn('pool'), shownPool = q ? pool.filter(function (n) { return n.toLowerCase().indexOf(q) >= 0; }) : pool;
@@ -278,6 +433,7 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
       return '<div class="zone" data-zone="' + r.id + '"><div class="zt"><span>' + esc(r.name) + '</span><span class="n">' + d.length + '</span></div><div class="drop">' +
         (d.length ? d.map(function (n) { return chip(n); }).join('') : '<span class="none">Empty</span>') + '</div>' + putHere(r.id) + '</div>';
     }).join('');
+    renderMap();
     var placed = S.dogs.filter(function (n) { var z = zoneOf(n); return z !== 'pool' && z !== 'chosen'; }).length;
     $('kChosen').textContent = chosen.length + placed;
     $('kPlaced').textContent = placed;
@@ -285,7 +441,7 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
     var bar = $('moveBar');
     if (S.sel) {
       bar.hidden = false;
-      bar.innerHTML = '<div class="row"><span>Moving <b>' + esc(short(S.sel)) + '</b>. Tap <b>Put here</b> on the place you want' + (zoneOf(S.sel) !== 'pool' ? ', or send them back to the list' : '') + '.</span>' +
+      bar.innerHTML = '<div class="row"><span>Moving <b>' + esc(short(S.sel)) + '</b>. Tap a room or yard on the map (or <b>Put here</b> in the list below)' + (zoneOf(S.sel) !== 'pool' ? ', or send them back to the list' : '') + '.</span>' +
         (zoneOf(S.sel) !== 'pool' ? '<button type="button" class="here" data-put="pool">Back to the list</button>' : '') + '<button type="button" class="btn" data-cancel="1">Cancel</button></div>';
     } else bar.hidden = true;
     var q2 = S.search; // keep search box content
@@ -303,35 +459,42 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
   }
   document.addEventListener('click', function (e) {
     if (suppressClick) { suppressClick = false; return; }
-    var t = e.target.closest ? e.target.closest('[data-put],[data-cancel],.dchip,[data-open],[data-undo]') : null;
+    var t = e.target.closest ? e.target.closest('[data-put],[data-cancel],[data-dog],[data-open],[data-del],[data-delyes],[data-delno],[data-admin],.mz.target') : null;
     if (!t) return;
     if (t.hasAttribute('data-put')) { if (S.sel) moveDog(S.sel, t.getAttribute('data-put')); }
     else if (t.hasAttribute('data-cancel')) { S.sel = null; render(); }
-    else if (t.classList.contains('dchip')) { var n = t.getAttribute('data-dog'); S.sel = S.sel === n ? null : n; render(); var again = document.querySelector('.dchip[aria-pressed="true"]'); if (again) again.focus(); }
+    else if (t.hasAttribute('data-dog')) { var n = t.getAttribute('data-dog'); S.sel = S.sel === n ? null : n; render(); var again = document.querySelector('[data-dog][aria-pressed="true"]'); if (again) again.focus(); }
+    else if (t.classList.contains('mz')) { if (S.sel) moveDog(S.sel, t.getAttribute('data-zone')); }
     else if (t.hasAttribute('data-open')) openBuild(t.getAttribute('data-open'));
+    else if (t.hasAttribute('data-del')) { S.confirmDel = t.getAttribute('data-del'); renderBuilds(); }
+    else if (t.hasAttribute('data-delno')) { S.confirmDel = null; renderBuilds(); }
+    else if (t.hasAttribute('data-delyes')) deleteBuild(t.getAttribute('data-delyes'));
+    else if (t.hasAttribute('data-admin')) adminPrompt();
   });
   $('search').addEventListener('input', function () { S.search = this.value; render(); $('search').focus(); });
 
   // Press-and-drag (mouse and touch). Touch needs a short hold so scrolling still works.
   document.addEventListener('pointerdown', function (e) {
-    var c = e.target.closest ? e.target.closest('.dchip') : null;
-    if (!c || c.classList.contains('ghost') || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    var c = e.target.closest ? e.target.closest('[data-dog]') : null;
+    if (!c || (e.pointerType === 'mouse' && e.button !== 0)) return;
     drag = { name: c.getAttribute('data-dog'), el: c, x: e.clientX, y: e.clientY, id: e.pointerId, touch: e.pointerType !== 'mouse', on: false, ghost: null, over: null, timer: null };
     if (drag.touch) drag.timer = setTimeout(function () { if (drag) startDrag(drag.x, drag.y); }, 260);
   });
   function startDrag(x, y) {
     if (!drag || drag.on) return;
     drag.on = true; clearTimeout(drag.timer);
-    var g = drag.el.cloneNode(true); g.classList.add('ghost'); g.removeAttribute('aria-pressed'); document.body.appendChild(g);
+    var tmp = document.createElement('div'); tmp.innerHTML = chip(drag.name); var g = tmp.firstChild; g.classList.add('ghost'); g.removeAttribute('aria-pressed'); document.body.appendChild(g);
     drag.ghost = g; drag.el.classList.add('lifted'); place(x, y);
     if (navigator.vibrate) try { navigator.vibrate(15); } catch (e) {}
   }
   function place(x, y) {
     var g = drag.ghost; g.style.left = (x - g.offsetWidth / 2) + 'px'; g.style.top = (y - g.offsetHeight - 10) + 'px';
-    var hit = document.elementFromPoint(x, y), z = hit && hit.closest ? hit.closest('[data-zone]') : null;
+    var hit = document.elementFromPoint(x, y), ze = hit && hit.closest ? hit.closest('[data-zone],[data-in]') : null;
+    var id = ze ? (ze.getAttribute('data-zone') || ze.getAttribute('data-in')) : null;
+    var z = !id ? null : (ze.hasAttribute('data-in') ? document.querySelector('.mz[data-zone="' + id + '"]') : ze);
     if (drag.over && drag.over !== z) drag.over.classList.remove('over');
     if (z) z.classList.add('over');
-    drag.over = z;
+    drag.over = z; drag.overId = id;
   }
   document.addEventListener('pointermove', function (e) {
     if (!drag || e.pointerId !== drag.id) return;
@@ -351,11 +514,14 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
     suppressClick = true; setTimeout(function () { suppressClick = false; }, 0);
     d.ghost.remove(); d.el.classList.remove('lifted');
     if (d.over) d.over.classList.remove('over');
-    if (drop && d.over) moveDog(d.name, d.over.getAttribute('data-zone')); else render();
+    if (drop && d.over && d.overId) moveDog(d.name, d.overId); else render();
   }
   document.addEventListener('pointerup', function (e) { if (drag && e.pointerId === drag.id) endDrag(true); });
   document.addEventListener('pointercancel', function (e) { if (drag && e.pointerId === drag.id) endDrag(false); });
   document.addEventListener('contextmenu', function (e) { if (drag && drag.on) e.preventDefault(); });
+  document.addEventListener('keydown', function (e) {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.namespaceURI && /svg/.test(e.target.namespaceURI) && e.target.getAttribute && e.target.getAttribute('role') === 'button') { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
+  });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { if (drag && drag.on) endDrag(false); else if (S.sel) { S.sel = null; render(); } } });
 
   $('fromSheet').addEventListener('click', function () {
@@ -416,6 +582,11 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
   function currentPlan() {
     var out = {}; S.dogs.forEach(function (n) { var z = zoneOf(n); if (z !== 'pool') (out[z] = out[z] || []).push(n); }); return out;
   }
+  function rnd(n) { var a = new Uint8Array(n); try { crypto.getRandomValues(a); } catch (e) { for (var i = 0; i < n; i++) a[i] = Math.floor(Math.random() * 256); } return Array.prototype.map.call(a, function (b) { return ('0' + b.toString(16)).slice(-2); }).join('').slice(0, n * 2); }
+  var MINE_KEY = 'haven-my-plans', ADMIN_KEY = 'haven-admin-key';
+  function getMine() { try { return JSON.parse(localStorage.getItem(MINE_KEY) || '{}') || {}; } catch (e) { return {}; } }
+  function setMine(m) { try { localStorage.setItem(MINE_KEY, JSON.stringify(m)); } catch (e) {} }
+  function getAdmin() { try { return localStorage.getItem(ADMIN_KEY) || ''; } catch (e) { return ''; } }
   var pubBusy = false;
   $('publish').addEventListener('click', function () {
     var title = $('pTitle').value.trim(), plan = currentPlan(), n = Object.keys(plan).reduce(function (a, z) { return a + plan[z].length; }, 0);
@@ -424,10 +595,12 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
     if (!title) { msg.textContent = 'Please give your plan a name first.'; $('pTitle').focus(); return; }
     if (!n) { msg.textContent = 'Add at least one dog to the New Haven first.'; return; }
     if (pubBusy) return;
+    var newId = rnd(6), newCode = rnd(10);
     pubBusy = true; $('publish').disabled = true; msg.textContent = 'Publishing…';
     fetch(API, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ title: title, author: $('pAuthor').value.trim(), place: plan, website: $('pWeb').value }) })
+      body: JSON.stringify({ id: newId, code: newCode, title: title, author: $('pAuthor').value.trim(), place: plan, website: $('pWeb').value }) })
       .then(function () {
+        var m = getMine(); m[newId] = newCode; setMine(m);
         msg.textContent = 'Published! It should show in the list below in a few seconds.';
         $('pTitle').value = '';
         setTimeout(loadBuilds, 2500); setTimeout(loadBuilds, 7000);
@@ -436,6 +609,27 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
   });
 
   // ---------- published plans ----------
+  function postJson(obj) { return fetch(API, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(obj) }); }
+  function deleteBuild(id) {
+    var mine = getMine(), admin = getAdmin(), had = S.builds.length;
+    S.confirmDel = null; $('buildsMsg').textContent = 'Deleting…';
+    postJson({ action: 'delete', id: id, code: mine[id] || '', admin: admin }).then(function () {
+      S.builds = S.builds.filter(function (b) { return b.id !== id; }); renderBuilds();
+      setTimeout(function () { loadBuilds().then(function () {
+        if (S.builds.some(function (b) { return b.id === id; })) $('buildsMsg').textContent = "That plan wasn't deleted. Only the person who published it (on the same phone or browser) or the Haven admin can delete it.";
+        else { var m = getMine(); delete m[id]; setMine(m); $('buildsMsg').textContent = 'Deleted.'; }
+      }); }, 3000);
+    }).catch(function () { $('buildsMsg').textContent = "Couldn't delete right now. Check your connection and try again."; renderBuilds(); });
+  }
+  function adminPrompt() {
+    if (getAdmin()) { try { localStorage.removeItem(ADMIN_KEY); } catch (e) {} renderBuilds(); notice('Admin mode is off on this device.', true); return; }
+    $('adminBox').hidden = !$('adminBox').hidden; if (!$('adminBox').hidden) $('adminKey').focus();
+  }
+  $('adminSave').addEventListener('click', function () {
+    var k = $('adminKey').value.trim(); if (!k) return;
+    try { localStorage.setItem(ADMIN_KEY, k); } catch (e) {}
+    $('adminKey').value = ''; $('adminBox').hidden = true; renderBuilds(); notice('Admin mode is on for this device. You can now delete any plan.', true);
+  });
   var buildsOk = 0;
   function loadBuilds() {
     if (!API) { $('buildsMsg').textContent = "Publishing isn't switched on yet. Once it is, plans people publish will appear here."; return Promise.resolve(); }
@@ -446,6 +640,11 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
     }).catch(function () {
       $('buildsMsg').textContent = buildsOk ? "Couldn't refresh, showing plans from " + clock(buildsOk) : "Couldn't load the published plans right now.";
     });
+  }
+  function delControls(b) {
+    if (!(getMine()[b.id] || getAdmin())) return '';
+    if (S.confirmDel === b.id) return '<span class="small">Delete this plan?</span><button type="button" class="btn danger" data-delyes="' + esc(b.id) + '">Yes, delete</button><button type="button" class="btn" data-delno="1">Keep it</button>';
+    return '<button type="button" class="btn" data-del="' + esc(b.id) + '">' + (getMine()[b.id] ? 'Delete my plan' : 'Delete (admin)') + '</button>';
   }
   function renderBuilds() {
     var box = $('builds');
@@ -459,7 +658,7 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
       });
       var when = b.time ? new Date(b.time).toLocaleDateString([], { day: 'numeric', month: 'short' }) : '';
       return '<article class="build"><h3>' + esc(b.title || 'Untitled plan') + '</h3><div class="small">' + (b.author ? 'by ' + esc(b.author) + ' · ' : '') + esc(when) + ' · ' + total + ' dogs, ' + inRooms + ' in rooms</div>' +
-        '<details><summary>See the rooms</summary><ul>' + rows + '</ul></details><button type="button" class="btn go" data-open="' + i + '">Open in the builder</button></article>';
+        '<details><summary>See the rooms</summary><ul>' + rows + '</ul></details><div class="row go"><button type="button" class="btn" data-open="' + i + '">Open in the builder</button>' + delControls(b) + '</div></article>';
     }).join('');
   }
   function openBuild(i) {
