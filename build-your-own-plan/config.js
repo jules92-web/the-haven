@@ -5,7 +5,7 @@ window.HAVEN_BUILD_CONFIG = {
   // The web address of the small Google Apps Script that saves and lists published plans.
   // Leave empty until it is set up (see apps-script.gs). Until then people can still build and
   // save plans on their own phone, but not publish them.
-  BUILDS_API_URL: '',
+  BUILDS_API_URL: 'https://script.google.com/macros/s/AKfycbxh4tmJFERvv12h24fGLjhsFZwq-mxZ714dFLYdvk66q2PKZAu5Zkb8CUAtHOwcIigQ/exec',
   // How often the list of published plans refreshes, in seconds.
   POLL_SECONDS: 60
 };
