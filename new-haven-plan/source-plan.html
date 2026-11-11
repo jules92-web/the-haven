@@ -1,0 +1,707 @@
+<title>New Haven Room Plan</title>
+<style>
+/* Layout: a header with live status, four counters, then the site plan beside a column of
+   what needs attention; a by-room list underneath doubles as the phone view. */
+:root {
+  --bg: #f2f4f0;
+  --surface: #ffffff;
+  --ink: #1d211d;
+  --muted: #5f675f;
+  --line: #d8ddd5;
+  --accent: #1f6f5c;
+  --accent-soft: #dcefe8;
+  --yard: #dbe8cf;
+  --yard-line: #7f9a6a;
+  --paved: #e5e1d8;
+  --paved-line: #9a948a;
+  --wall: #2b2d2a;
+  --room: #ffffff;
+  --gate: #b57a1e;
+  --planned: #7a3fb0;
+  --chip: #eef4ec;
+  --chip-line: #b3c4ac;
+  --male: #2f6fbf;
+  --female: #c0407a;
+  --warn: #8a5a00;
+  --warn-bg: #fff1c9;
+  --bad: #9b1c1c;
+  --bad-bg: #fbe0e0;
+  --ok: #1f7a4d;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131714; --surface: #1b201c; --ink: #e8ece6; --muted: #98a298; --line: #2f372f;
+    --accent: #5fc2a5; --accent-soft: #1f342d; --yard: #26382a; --yard-line: #5d7a52;
+    --paved: #34322d; --paved-line: #6d685e; --wall: #d3d7cf; --room: #1f2420; --gate: #e0a43f;
+    --planned: #bb8de3; --chip: #2a3329; --chip-line: #46543f; --male: #6aa6ee; --female: #e57fb0;
+    --warn: #f0c26b; --warn-bg: #3a2f12; --bad: #ff9c9c; --bad-bg: #3d1d1d; --ok: #6fd6a0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131714; --surface: #1b201c; --ink: #e8ece6; --muted: #98a298; --line: #2f372f;
+  --accent: #5fc2a5; --accent-soft: #1f342d; --yard: #26382a; --yard-line: #5d7a52;
+  --paved: #34322d; --paved-line: #6d685e; --wall: #d3d7cf; --room: #1f2420; --gate: #e0a43f;
+  --planned: #bb8de3; --chip: #2a3329; --chip-line: #46543f; --male: #6aa6ee; --female: #e57fb0;
+  --warn: #f0c26b; --warn-bg: #3a2f12; --bad: #ff9c9c; --bad-bg: #3d1d1d; --ok: #6fd6a0;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: 'Albert Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; font-size: 14px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 40px;
+}
+.wrap { max-width: 1480px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+header { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; justify-content: space-between; }
+h1 { margin: 0; font-size: 28px; line-height: 1.1; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+.sub { margin: 4px 0 0; color: var(--muted); }
+.tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.status { display: inline-flex; gap: 8px; align-items: center; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: var(--muted); }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); flex: none; }
+.status[data-s="live"] .dot { background: var(--ok); }
+.status[data-s="warn"] .dot { background: var(--gate); }
+.status[data-s="bad"] .dot { background: var(--bad); }
+button { font: inherit; color: inherit; cursor: pointer; }
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 7px 12px; border-radius: 8px; font-weight: 600; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.toggle { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); }
+.toggle input { accent-color: var(--planned); }
+.notice { border: 1px solid var(--line); border-radius: 10px; background: var(--warn-bg); color: var(--warn); padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.notice[hidden] { display: none; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+.kpi .l { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.kpi .v { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 26px; font-weight: 500; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.kpi[data-tone="warn"] .v { color: var(--warn); }
+.kpi[data-tone="bad"] .v { color: var(--bad); }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+@media (max-width: 1000px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; min-width: 0; }
+.card h2 { margin: 0 0 8px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.planbox { overflow-x: auto; }
+.planbox svg { display: block; width: 100%; min-width: 960px; height: auto; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; color: var(--muted); font-size: 12px; }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.sw { width: 18px; height: 10px; border-radius: 2px; display: inline-block; }
+.side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { border: 1px solid var(--chip-line); background: var(--chip); border-radius: 999px; padding: 3px 10px; font-size: 13px; display: inline-flex; gap: 6px; align-items: center; }
+.pill:hover { border-color: var(--accent); }
+.sx { width: 8px; height: 8px; border-radius: 50%; background: var(--line); flex: none; }
+.sx.M { background: var(--male); } .sx.F { background: var(--female); }
+.detail h3 { margin: 0 0 2px; font-size: 20px; line-height: 1.2; }
+.detail .meta { color: var(--muted); margin: 0 0 10px; }
+.detail dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; }
+.detail dt { color: var(--muted); }
+.detail dd { margin: 0; font-weight: 500; }
+.hint { color: var(--muted); margin: 0; }
+.issue { padding: 8px 10px; border-radius: 8px; font-size: 13px; }
+.issue + .issue { margin-top: 6px; }
+.issue.bad { background: var(--bad-bg); color: var(--bad); }
+.issue.warn { background: var(--warn-bg); color: var(--warn); }
+.planned-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 13px; }
+.planned-list li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; }
+.num { width: 22px; height: 22px; border-radius: 50%; background: var(--planned); color: var(--surface); font-weight: 700; font-size: 12px; display: grid; place-items: center; }
+.rooms { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.room { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--surface); text-align: left; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.room:hover, .room[aria-pressed="true"] { border-color: var(--accent); }
+.room .t { display: flex; justify-content: space-between; gap: 8px; font-weight: 700; }
+.room .t span:last-child { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-weight: 500; color: var(--muted); }
+.empty { color: var(--muted); font-size: 13px; }
+/* plan */
+svg text { font-family: 'Albert Sans', system-ui, sans-serif; }
+.zone { cursor: pointer; }
+.zone .shape { transition: stroke 0.12s; }
+.zone:hover .shape { stroke: var(--accent); stroke-width: 4; }
+.zone.sel .shape { stroke: var(--accent); stroke-width: 5; }
+.zl { font-size: 22px; font-weight: 700; fill: var(--ink); }
+.zl.dim { font-weight: 600; fill: var(--muted); }
+.zc { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 17px; fill: var(--muted); }
+.zn { font-size: 16px; fill: var(--muted); }
+.chip { cursor: pointer; }
+.chip rect { fill: var(--chip); stroke: var(--chip-line); stroke-width: 1; }
+.chip:hover rect, .chip.sel rect { stroke: var(--accent); stroke-width: 2.5; }
+.chip text { fill: var(--ink); }
+.chip .m { fill: var(--male); } .chip .f { fill: var(--female); } .chip .u { fill: var(--line); }
+.more text { fill: var(--muted); font-style: italic; }
+.planned-g[hidden] { display: none; }
+</style>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>New Haven room plan</h1>
+      <p class="sub">Dogs shown in each room come straight from the "New Haven Rooms" tab of your sheet.</p>
+    </div>
+    <div class="tools">
+      <label class="toggle"><input type="checkbox" id="showPlanned" checked> Show planned fences</label>
+      <span class="status" id="status" data-s="idle"><span class="dot"></span><span id="statusText">Connecting to Google Sheets…</span></span>
+      <button class="btn" id="refresh" type="button">Refresh now</button>
+    </div>
+  </header>
+
+  <div class="notice" id="notice" hidden>
+    <span id="noticeText"></span>
+    <button class="btn primary" id="allow" type="button" hidden>Allow access to Google Sheets</button>
+  </div>
+
+  <section class="kpis" aria-label="Summary">
+    <div class="kpi"><div class="l">Assigned to New Haven</div><div class="v" id="kAssigned">—</div></div>
+    <div class="kpi"><div class="l">Placed in a room</div><div class="v" id="kPlaced">—</div></div>
+    <div class="kpi" id="kUnplacedBox"><div class="l">Not yet placed</div><div class="v" id="kUnplaced">—</div></div>
+    <div class="kpi" id="kCheckBox"><div class="l">Needs checking</div><div class="v" id="kCheck">—</div></div>
+  </section>
+
+  <div class="main">
+    <section class="card">
+      <h2>Site plan</h2>
+      <div class="planbox"><svg id="plan" viewBox="0 0 1530 1110" role="img" aria-label="Site plan of the Haven with the dogs placed in each room"></svg></div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--yard);border:1px solid var(--yard-line)"></i>Yard</span>
+        <span><i class="sw" style="background:var(--paved);border:1px solid var(--paved-line)"></i>Interlock / terrace</span>
+        <span><i class="sw" style="background:var(--gate)"></i>Gate</span>
+        <span><i class="sw" style="background:var(--wall);height:4px"></i>Door</span>
+        <span><i class="sw" style="height:0;border-top:3px dashed var(--planned);border-radius:0"></i>Planned fence or gate</span>
+        <span><span class="sx M"></span>Male</span>
+        <span><span class="sx F"></span>Female</span>
+      </div>
+      <p class="hint" style="margin-top:8px">Not to scale. Front at the bottom. Rooms are drawn larger than on the sketch so the names fit.</p>
+    </section>
+
+    <div class="side">
+      <section class="card detail" id="detail" aria-live="polite"></section>
+      <section class="card"><h2>Not yet placed</h2><div id="unplaced"></div></section>
+      <section class="card"><h2>Needs checking</h2><div id="issues"></div></section>
+      <section class="card">
+        <h2>Planned changes</h2>
+        <ul class="planned-list">
+          <li><span class="num">1</span><span>Yard B gated off: a gate at the top left corner of Room 3, and a fence in line with the Yard A gate out to the house wall.</span></li>
+          <li><span class="num">2</span><span>Possible fence and gate between the bottom right corner of the Kitchen and Yard D.</span></li>
+        </ul>
+      </section>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>By room</h2>
+    <div class="rooms" id="rooms"></div>
+    <div id="others" style="margin-top:12px"></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var SHEET = '1xYsK6sSyOd_vrPtr9i9o_g9Q5bP3PCiKtG51PMyi0eA';
+  var SERVER = 'Google Sheets';
+  var RANGE_ROOMS = "'New Haven Rooms'!A1:Z80";
+  var RANGE_DOGS = "'Dog Database'!A1:G200";
+
+  // ---------- geometry (original sketch coordinates, stretched into a roomier layout) ----------
+  var AX = [[16,20],[114,128],[124,140],[233,290],[260,330],[334,530],[413,750],[459,880],[479,962],[483,1000],[544,1200],[570,1250],[586,1280],[698,1500]];
+  var AY = [[17,10],[35,60],[81,290],[100,335],[112,364],[144,455],[145,457],[180,535],[200,587],[207,675],[215,732],[233,781],[249,815],[439,1075]];
+  function interp(a, v) {
+    var i = 1;
+    while (i < a.length - 1 && v > a[i][0]) i++;
+    var p = a[i - 1], q = a[i];
+    return p[1] + (v - p[0]) * (q[1] - p[1]) / (q[0] - p[0]);
+  }
+  function mx(x) { return interp(AX, x); }
+  function my(y) { return interp(AY, y); }
+  function pt(p) { return mx(p[0]).toFixed(1) + ',' + my(p[1]).toFixed(1); }
+  function rectPoly(r) { return [[r[0], r[1]], [r[2], r[1]], [r[2], r[3]], [r[0], r[3]]]; }
+
+  var ZONES = [
+    { id: 'yardA', name: 'Yard A', kind: 'yard', poly: [[24,112],[114,100],[233,100],[233,249],[114,249],[16,215]], box: [34,118,228,246] },
+    { id: 'yardB', name: 'Yard B', kind: 'yard', poly: [[124,17],[233,17],[233,100],[124,100]], box: [126,19,231,98] },
+    { id: 'yardD', name: 'Yard D', kind: 'yard', poly: [[486,249],[570,249],[586,439],[469,439]], box: [492,252,568,436], note: 'continues ↓' },
+    { id: 'yardE', name: 'Yard E', kind: 'yard', poly: [[570,233],[698,233],[698,439],[586,439],[570,249]], box: [592,240,694,436], note: 'continues ↓' },
+    { id: 'yardC', name: 'Yard C interlock', kind: 'strip', box: [262,209,542,247] },
+    { id: 'room3', name: 'Room 3', kind: 'room', rect: [260,35,334,145] },
+    { id: 'room2', name: 'Room 2', kind: 'room', rect: [260,145,334,207] },
+    { id: 'room1', name: 'Room 1', kind: 'room', rect: [334,35,413,180] },
+    { id: 'terrace', name: 'Terrace', kind: 'terrace', rect: [334,180,413,207] },
+    { id: 'wc', name: 'W.C.', kind: 'room', rect: [413,35,459,81] },
+    { id: 'storage', name: 'Storage', kind: 'room', rect: [459,35,479,81], short: 'S' },
+    { id: 'room6', name: 'Room 6', kind: 'room', rect: [479,35,544,81] },
+    { id: 'room5', name: 'Room 5', kind: 'room', rect: [413,81,483,144] },
+    { id: 'room4', name: 'Room 4', kind: 'room', rect: [413,144,483,207] },
+    { id: 'kitchen', name: 'Kitchen', kind: 'room', rect: [483,81,544,207] }
+  ];
+  ZONES.forEach(function (z) { if (z.rect) { z.poly = rectPoly(z.rect); z.box = z.rect; } });
+  var ZONE_BY_ID = {};
+  ZONES.forEach(function (z) { ZONE_BY_ID[z.id] = z; });
+
+  var ALIAS = { planb: 'yardB', yardb: 'yardB', yarda: 'yardA', yardc: 'yardC', yardcinterlock: 'yardC', interlock: 'yardC', yardcinterlockstrip: 'yardC', yardd: 'yardD', darde: 'yardE', yarde: 'yardE',
+    terrace: 'terrace', kitchen: 'kitchen', k: 'kitchen', wc: 'wc', storage: 'storage', s: 'storage' };
+  for (var n = 1; n <= 6; n++) ALIAS['room' + n] = 'room' + n;
+  function zoneFor(header) {
+    var k = String(header).toLowerCase().replace(/[^a-z0-9]/g, '');
+    return ALIAS[k] || null;
+  }
+
+  var GATES = [[[23,128],[21,150]],[[204,100],[223,100]],[[233,200],[260,200]],[[260,217],[260,245]],[[544,79],[570,79]],
+    [[570,212],[570,230]],[[570,236],[570,247]],[[551,249],[567,249]],[[360,249],[388,249]]];
+  var DOORS = [[[260,124],[260,133]],[[334,120],[334,129]],[[334,158],[334,167]],[[350,180],[365,180]],[[413,42],[413,51]],
+    [[463,35],[475,35]],[[544,64],[544,73]],[[413,94],[413,103]],[[483,93],[483,102]],[[544,93],[544,102]],[[413,156],[413,165]]];
+  var STAIR_Y = [150,158,165,173,180,188];
+
+  // ---------- state ----------
+  var S = { rooms: [], all: [], unplaced: [], wrong: [], dups: [], others: [], info: {}, sel: null, loaded: false };
+  var mcp = null, unsubs = [], started = false;
+  var db = null, canWrite = false, snapLoaded = false, snapJson = '', snapAt = 0, writing = false, liveOn = false, allowPending = false, saveTimer = 0;
+  var raw = { rooms: null, dogs: null };
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function key(s) { return String(s).trim().toLowerCase(); }
+  function shortName(n) { return String(n).replace(/\s*\(.*?\)\s*/g, ' ').trim() || n; }
+  function sexOf(name) { var i = S.info[key(name)]; var g = i && String(i.gender || '').trim().toUpperCase(); return g === 'M' || g === 'F' ? g : ''; }
+  function payloadOf(r) {
+    var p = r && r.payload;
+    if (typeof p === 'string') { try { p = JSON.parse(p); } catch (e) { /* keep text */ } }
+    return p;
+  }
+
+  // ---------- parsing ----------
+  function applyRooms(result) {
+    var p = payloadOf(result);
+    var vals = p && p.values;
+    if (!vals || !vals.length) { setStatus('warn', 'The New Haven Rooms tab came back empty'); return; }
+    if (!parseRooms(vals)) return;
+    liveOn = true; allowPending = false; raw.rooms = vals; $('refresh').hidden = false;
+    setStatus('live', 'Live · updated ' + stamp(result));
+    render();
+    queueSave();
+  }
+  function parseRooms(vals) {
+    var hi = -1;
+    for (var i = 0; i < vals.length; i++) {
+      if (String((vals[i] || [])[0] || '').toLowerCase().indexOf('all dogs') === 0) { hi = i; break; }
+    }
+    if (hi < 0) { setStatus('warn', 'Could not find the header row in the New Haven Rooms tab'); return false; }
+    var head = vals[hi], rows = vals.slice(hi + 2);
+    var all = [];
+    rows.forEach(function (r) { var v = String((r || [])[0] || '').trim(); if (v) all.push(v); });
+    var rooms = [];
+    for (var j = 3; j < head.length; j++) {
+      var h = String(head[j] || '').trim();
+      if (!h) continue;
+      var dogs = [];
+      rows.forEach(function (r) { var v = String((r || [])[j] || '').trim(); if (v) dogs.push(v); });
+      rooms.push({ header: h, zone: zoneFor(h), dogs: dogs });
+    }
+    var inList = {}; all.forEach(function (d) { inList[key(d)] = 1; });
+    var where = {};
+    rooms.forEach(function (r) { r.dogs.forEach(function (d) { (where[key(d)] = where[key(d)] || { name: d, rooms: [] }).rooms.push(r.header); }); });
+    S.rooms = rooms; S.all = all;
+    S.unplaced = all.filter(function (d) { return !where[key(d)]; });
+    S.wrong = []; S.dups = [];
+    Object.keys(where).forEach(function (k) {
+      var w = where[k];
+      if (!inList[k]) S.wrong.push(w);
+      if (w.rooms.length > 1) S.dups.push(w);
+    });
+    S.others = rooms.filter(function (r) { return !r.zone; });
+    S.loaded = true;
+    return true;
+  }
+  function applyDogs(result) {
+    var p = payloadOf(result);
+    var vals = p && p.values;
+    if (!vals || !vals.length) return;
+    raw.dogs = vals;
+    parseDogs(vals);
+    render();
+    queueSave();
+  }
+  function parseDogs(vals) {
+    var h = (vals[0] || []).map(key);
+    var ix = { name: h.indexOf('dog name'), gender: h.indexOf('gender'), guardian: h.indexOf('guardian'),
+      cur: h.indexOf('current location'), prop: h.indexOf('proposed location') };
+    if (ix.name < 0) return;
+    var info = {};
+    vals.slice(1).forEach(function (r) {
+      var n = String((r || [])[ix.name] || '').trim();
+      if (!n || n.toLowerCase() === 'total') return;
+      info[key(n)] = { gender: ix.gender >= 0 ? r[ix.gender] : '', guardian: ix.guardian >= 0 ? r[ix.guardian] : '',
+        cur: ix.cur >= 0 ? r[ix.cur] : '', prop: ix.prop >= 0 ? r[ix.prop] : '' };
+    });
+    S.info = info;
+  }
+
+  // ---------- shared saved copy (so people without sheet access still see the plan) ----------
+  function savedLabel() {
+    return 'Saved copy · last changed ' + new Date(snapAt).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+  function onSnap(snap) {
+    var first = !snapLoaded;
+    snapLoaded = true;
+    var d = snap && snap.exists ? snap.data() : null;
+    if (d && typeof d.rooms === 'string' && typeof d.dogs === 'string') {
+      snapJson = d.rooms + '|' + d.dogs;
+      if (!liveOn) {
+        try {
+          if (parseRooms(JSON.parse(d.rooms))) {
+            parseDogs(JSON.parse(d.dogs));
+            snapAt = d.at || Date.now();
+            if (!(allowPending && canWrite)) showNotice('', false);
+            setStatus('warn', savedLabel());
+            $('refresh').hidden = true;
+            render();
+          }
+        } catch (e) { /* unreadable copy: ignore */ }
+      }
+    } else if (!liveOn && !mcp && !S.loaded) {
+      setStatus('bad', 'No saved copy yet');
+      showNotice('Nothing has been saved for this page yet. Ask Julian to open it once so a shared copy is stored.', false);
+    }
+    if (first) queueSave();
+  }
+  function queueSave() {
+    if (saveTimer) return;
+    saveTimer = setTimeout(function () { saveTimer = 0; saveNow(); }, 2500);
+  }
+  function saveNow() {
+    if (!db || !canWrite || !snapLoaded || !liveOn || !raw.rooms || !raw.dogs || writing) return;
+    var r = JSON.stringify(raw.rooms), d = JSON.stringify(raw.dogs), k = r + '|' + d;
+    if (k === snapJson) return;
+    writing = true;
+    db.doc('snapshot/current').set({ rooms: r, dogs: d, at: Date.now() }).then(function () {
+      snapJson = k; writing = false; queueSave();
+    }, function () { writing = false; /* others keep the previous copy; retry on the next data change */ });
+  }
+  function stamp(result) {
+    var t = (result && result.cache && result.cache.storedAt) || Date.now();
+    return new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // ---------- status ----------
+  function setStatus(tone, text) {
+    $('status').setAttribute('data-s', tone);
+    $('statusText').textContent = text;
+  }
+  function showNotice(text, allow) {
+    $('noticeText').textContent = text;
+    $('allow').hidden = !allow;
+    $('notice').hidden = !text;
+  }
+  function handleErr(e) {
+    var code = (e && e.code) || 'upstream_error';
+    var allowCode = code === 'not_in_manifest' || code === 'approval_required' || code === 'consent_required';
+    allowPending = allowCode;
+    if (S.loaded && !liveOn && !(allowCode && canWrite)) { setStatus('warn', savedLabel()); showNotice('', false); $('refresh').hidden = true; return; }
+    if (code === 'needs_reauth') {
+      setStatus('bad', 'Google Sheets needs reconnecting');
+      showNotice('Google Sheets needs to be reconnected. Reconnect it in claude.ai under Settings, then Connectors.', false);
+    } else if (code === 'server_not_connected' || code === 'selection_required' || code === 'server_not_found') {
+      setStatus('bad', 'Google Sheets is not connected');
+      showNotice('Google Sheets is not connected for you. Ask Julian to open this page once so a shared copy is saved, or add the Google Sheets connector in claude.ai under Settings, then Connectors.', false);
+    } else if (code === 'not_in_manifest' || code === 'approval_required' || code === 'consent_required') {
+      setStatus('warn', 'Waiting for your permission');
+      showNotice('This page needs your permission to read the sheet. Nothing is changed in the sheet.', true);
+    } else if (code === 'blocked_by_policy') {
+      setStatus('bad', 'Blocked by your organisation');
+      showNotice('Your organisation blocks Google Sheets access for this page.', false);
+    } else if (code === 'tool_error') {
+      setStatus('bad', 'The sheet could not be read');
+      showNotice('Google Sheets answered with an error' + (e && e.message ? ': ' + String(e.message).slice(0, 160) : '') + '. Check that the New Haven Rooms tab still exists.', false);
+    } else if (code === 'not_granted' || code === 'capability_disabled' || code === 'capability_removed') {
+      setStatus('bad', 'Live data is not available here');
+      showNotice('Open this page inside Claude to see live data from the sheet.', false);
+    } else {
+      setStatus('warn', 'Could not reach Google Sheets, will retry');
+      if (!S.loaded) showNotice('', false);
+    }
+  }
+  function needsAllow(e) {
+    var c = e && e.code;
+    return c === 'not_in_manifest' || c === 'approval_required' || c === 'consent_required' || c === 'needs_reauth' ||
+      c === 'server_not_connected' || c === 'selection_required' || c === 'blocked_by_policy' || c === 'not_granted' || c === 'capability_disabled';
+  }
+
+  // ---------- chip layout ----------
+  function layoutChips(items, x0, y0, w, h) {
+    var n = items.length, gap = 6, out = { fs: 11, ch: 23, cols: 1, cw: w, shown: items, more: 0 };
+    if (!n) return out;
+    var longest = 0;
+    items.forEach(function (i) { longest = Math.max(longest, i.label.length); });
+    var sizes = [22, 21, 20, 19, 18, 17, 16, 15, 14];
+    for (var s = 0; s < sizes.length; s++) {
+      var fs = sizes[s], ch = fs + 14;
+      for (var cols = 1; cols <= 6; cols++) {
+        var cw = (w - (cols - 1) * gap) / cols;
+        if (longest * fs * 0.56 + 36 > cw) continue;
+        var rows = Math.ceil(n / cols);
+        if (rows * (ch + gap) - gap <= h) return { fs: fs, ch: ch, cols: cols, cw: Math.min(cw, longest * fs * 0.6 + 44), shown: items, more: 0 };
+      }
+    }
+    var f = 14, c2 = 28, k = Math.max(1, Math.min(3, Math.floor(w / 110)));
+    var cw2 = (w - (k - 1) * gap) / k;
+    var cap = Math.max(1, Math.floor((h + gap) / (c2 + gap))) * k;
+    var shown = n > cap ? items.slice(0, cap - 1) : items;
+    var maxChars = Math.max(4, Math.floor((cw2 - 36) / (f * 0.56)));
+    shown = shown.map(function (i) { return { label: i.label.length > maxChars ? i.label.slice(0, maxChars - 1) + '…' : i.label, name: i.name }; });
+    return { fs: f, ch: c2, cols: k, cw: cw2, shown: shown, more: n > cap ? n - (cap - 1) : 0 };
+  }
+
+  // ---------- drawing ----------
+  function polyPoints(poly) { return poly.map(pt).join(' '); }
+  function render() {
+    var zoneData = {};
+    S.rooms.forEach(function (r) {
+      if (!r.zone) return;
+      var d = zoneData[r.zone] || (zoneData[r.zone] = { header: r.header, dogs: [] });
+      d.dogs = d.dogs.concat(r.dogs);
+    });
+    var out = [];
+    // yards and paving
+    out.push('<rect x="' + mx(233) + '" y="' + my(17) + '" width="' + (mx(570) - mx(233)) + '" height="' + (my(249) - my(17)) + '" fill="var(--paved)" stroke="var(--paved-line)" stroke-width="1.5"/>');
+    ZONES.filter(function (z) { return z.kind === 'yard'; }).forEach(function (z) { out.push(zoneShape(z, zoneData[z.id])); });
+    // house
+    ZONES.filter(function (z) { return z.kind === 'room' || z.kind === 'terrace'; }).forEach(function (z) { out.push(zoneShape(z, zoneData[z.id])); });
+    // yard C strip hit area
+    var yc = ZONE_BY_ID.yardC;
+    out.push(zoneShape(yc, zoneData.yardC));
+    // stairs
+    STAIR_Y.forEach(function (y) {
+      out.push('<line x1="' + mx(234) + '" x2="' + mx(259) + '" y1="' + my(y) + '" y2="' + my(y) + '" stroke="var(--paved-line)" stroke-width="1.5"/>');
+    });
+    [[253, 260], [262, 269]].forEach(function (r) {
+      out.push('<rect x="' + mx(360) + '" y="' + my(r[0]) + '" width="' + (mx(388) - mx(360)) + '" height="' + (my(r[1]) - my(r[0])) + '" fill="none" stroke="var(--paved-line)" stroke-width="1.5"/>');
+    });
+    // doors and gates
+    DOORS.forEach(function (l) { out.push(seg(l, 'var(--wall)', 6)); });
+    GATES.forEach(function (l) { out.push(seg(l, 'var(--gate)', 8)); });
+    // planned fences
+    out.push('<g class="planned-g" id="plannedG"' + ($('showPlanned').checked ? '' : ' hidden') + '>' +
+      '<g><title>1. Yard B gated off: fence or gate at the top left corner of Room 3</title>' + seg([[260,17],[260,35]], 'var(--planned)', 6, '10 7') + '</g>' +
+      '<g><title>1. Yard B gated off: fence in line with the Yard A gate, out to the house wall</title>' + seg([[233,100],[260,100]], 'var(--planned)', 6, '10 7') + '</g>' +
+      '<g><title>2. Possible fence and gate between the bottom right corner of the Kitchen and Yard D</title>' + seg([[544,207],[544,222]], 'var(--planned)', 6, '10 7') +
+      seg([[544,222],[544,234]], 'var(--gate)', 8, '6 5') + seg([[544,234],[544,249]], 'var(--planned)', 6, '10 7') + '</g>' +
+      badge(mx(246), my(58) - 4, '1') + badge(mx(534), my(238), '2') + '</g>');
+    // text
+    out.push(text('Interlock', mx(430), 45, 'zn', 'middle'));
+    out.push(text('Driveway →', mx(150), my(295), 'zn', 'start'));
+    out.push(text('Parking lot ↓', mx(379), my(315), 'zn', 'middle'));
+    // zone labels and chips
+    ZONES.forEach(function (z) { out.push(zoneContent(z, zoneData[z.id])); });
+    $('plan').innerHTML = out.join('');
+    renderSide();
+    renderRooms();
+    renderKpis();
+    bind();
+  }
+  function seg(l, color, w, dash) {
+    return '<line x1="' + mx(l[0][0]).toFixed(1) + '" y1="' + my(l[0][1]).toFixed(1) + '" x2="' + mx(l[1][0]).toFixed(1) + '" y2="' + my(l[1][1]).toFixed(1) +
+      '" stroke="' + color + '" stroke-width="' + w + '" stroke-linecap="butt"' + (dash ? ' stroke-dasharray="' + dash + '"' : '') + '/>';
+  }
+  function badge(x, y, t) {
+    return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="12" fill="var(--planned)"/><text x="' + x.toFixed(1) + '" y="' + (y + 4.5).toFixed(1) +
+      '" text-anchor="middle" font-size="14" font-weight="700" fill="var(--surface)">' + t + '</text>';
+  }
+  function text(t, x, y, cls, anchor) {
+    return '<text class="' + cls + '" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="' + anchor + '">' + esc(t) + '</text>';
+  }
+  function zoneShape(z, data) {
+    var sel = S.sel && S.sel.type === 'zone' && S.sel.id === z.id ? ' sel' : '';
+    var fill = z.kind === 'yard' ? 'var(--yard)' : (z.kind === 'room' ? 'var(--room)' : (z.kind === 'terrace' ? 'var(--paved)' : 'transparent'));
+    var stroke = z.kind === 'yard' ? 'var(--yard-line)' : (z.kind === 'room' ? 'var(--wall)' : (z.kind === 'terrace' ? 'var(--paved-line)' : 'transparent'));
+    var sw = z.kind === 'room' ? 3 : 1.5;
+    var shape;
+    if (z.kind === 'strip') {
+      var b = z.box;
+      shape = '<rect class="shape" x="' + mx(b[0]).toFixed(1) + '" y="' + my(b[1]).toFixed(1) + '" width="' + (mx(b[2]) - mx(b[0])).toFixed(1) + '" height="' + (my(b[3]) - my(b[1])).toFixed(1) + '" rx="6" fill="transparent" stroke="transparent" stroke-width="' + sw + '"/>';
+    } else {
+      shape = '<polygon class="shape" points="' + polyPoints(z.poly) + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="' + sw + '" stroke-linejoin="round"/>';
+    }
+    return '<g class="zone' + sel + '" data-zone="' + z.id + '" role="button" tabindex="0" aria-label="' + esc(z.name) + (data ? ', ' + data.dogs.length + ' dogs' : '') + '">' + shape + '</g>';
+  }
+  function zoneContent(z, data) {
+    var b = z.box, x0 = mx(b[0]), y0 = my(b[1]), x1 = mx(b[2]), y1 = my(b[3]);
+    var o = [];
+    var name = z.short ? z.short : z.name;
+    var has = !!data;
+    var lbl = '<text class="zl' + (has ? '' : ' dim') + '" x="' + (x0 + 10).toFixed(1) + '" y="' + (y0 + 28).toFixed(1) + '" pointer-events="none">' + esc(name) + '</text>';
+    o.push(lbl);
+    if (z.note) o.push('<text class="zn" x="' + (x0 + 10).toFixed(1) + '" y="' + (y0 + 52).toFixed(1) + '" pointer-events="none">' + esc(z.note) + '</text>');
+    if (has) {
+      o.push('<text class="zc" x="' + (x1 - 10).toFixed(1) + '" y="' + (y0 + 28).toFixed(1) + '" text-anchor="end" pointer-events="none">' + data.dogs.length + '</text>');
+      if (!data.dogs.length) {
+        o.push('<text class="zn" x="' + (x0 + 10).toFixed(1) + '" y="' + (y0 + 54).toFixed(1) + '" pointer-events="none">empty</text>');
+      } else {
+        var items = data.dogs.map(function (d) { return { label: shortName(d), name: d }; });
+        var top = y0 + 44;
+        var L = layoutChips(items, x0 + 10, top, x1 - x0 - 20, y1 - top - 8);
+        L.shown.forEach(function (it, i) {
+          var c = i % L.cols, r = Math.floor(i / L.cols);
+          var cx = x0 + 10 + c * (L.cw + 6), cy = top + r * (L.ch + 6);
+          var sx = sexOf(it.name);
+          var sel = S.sel && S.sel.type === 'dog' && key(S.sel.name) === key(it.name) ? ' sel' : '';
+          o.push('<g class="chip' + sel + '" data-dog="' + esc(it.name) + '" role="button" tabindex="0" aria-label="' + esc(it.name) + '"><title>' + esc(it.name) + '</title>' +
+            '<rect x="' + cx.toFixed(1) + '" y="' + cy.toFixed(1) + '" width="' + L.cw.toFixed(1) + '" height="' + L.ch + '" rx="6"/>' +
+            '<circle class="' + (sx === 'M' ? 'm' : sx === 'F' ? 'f' : 'u') + '" cx="' + (cx + 13).toFixed(1) + '" cy="' + (cy + L.ch / 2).toFixed(1) + '" r="5.5"/>' +
+            '<text x="' + (cx + 26).toFixed(1) + '" y="' + (cy + L.ch / 2 + L.fs * 0.35).toFixed(1) + '" font-size="' + L.fs + '">' + esc(it.label) + '</text></g>');
+        });
+        if (L.more) {
+          var idx = L.shown.length, c3 = idx % L.cols, r3 = Math.floor(idx / L.cols);
+          o.push('<g class="more" pointer-events="none"><text x="' + (x0 + 10 + c3 * (L.cw + 6) + 8).toFixed(1) + '" y="' + (top + r3 * (L.ch + 6) + L.ch / 2 + 4).toFixed(1) + '" font-size="16">+' + L.more + ' more</text></g>');
+        }
+      }
+    }
+    return o.join('');
+  }
+
+  // ---------- side panels ----------
+  function pillDog(name) {
+    var sx = sexOf(name);
+    return '<button type="button" class="pill" data-dog="' + esc(name) + '"><span class="sx ' + sx + '"></span>' + esc(name) + '</button>';
+  }
+  function renderKpis() {
+    var a = S.all.length, u = S.unplaced.length, c = S.wrong.length + S.dups.length;
+    $('kAssigned').textContent = S.loaded ? a : '—';
+    $('kPlaced').textContent = S.loaded ? a - u : '—';
+    $('kUnplaced').textContent = S.loaded ? u : '—';
+    $('kCheck').textContent = S.loaded ? c : '—';
+    $('kUnplacedBox').setAttribute('data-tone', S.loaded && u > 0 ? 'warn' : '');
+    $('kCheckBox').setAttribute('data-tone', S.loaded && c > 0 ? 'bad' : '');
+  }
+  function roomOfDog(name) {
+    var hits = [];
+    S.rooms.forEach(function (r) { if (r.dogs.some(function (d) { return key(d) === key(name); })) hits.push(r.header); });
+    return hits;
+  }
+  function renderSide() {
+    $('unplaced').innerHTML = !S.loaded ? '<p class="hint">Waiting for the sheet…</p>' :
+      (S.unplaced.length ? '<div class="pills">' + S.unplaced.map(pillDog).join('') + '</div>' : '<p class="hint">Every New Haven dog has a room.</p>');
+    var iss = [];
+    S.wrong.forEach(function (w) {
+      var i = S.info[key(w.name)];
+      iss.push('<div class="issue bad"><strong>' + esc(w.name) + '</strong> is in ' + esc(w.rooms.join(' and ')) + ' but is not assigned to New Haven' +
+        (i && i.prop ? ' (Dog Database says ' + esc(i.prop) + ')' : '') + '.</div>');
+    });
+    S.dups.forEach(function (w) {
+      iss.push('<div class="issue warn"><strong>' + esc(w.name) + '</strong> is placed in ' + esc(w.rooms.join(' and ')) + '.</div>');
+    });
+    $('issues').innerHTML = !S.loaded ? '<p class="hint">Waiting for the sheet…</p>' : (iss.length ? iss.join('') : '<p class="hint">Nothing to check.</p>');
+    renderDetail();
+  }
+  function renderDetail() {
+    var el = $('detail'), s = S.sel;
+    if (!s) { el.innerHTML = '<h2>Details</h2><p class="hint">Click a room or a dog on the plan to see who is there and who looks after them.</p>'; return; }
+    if (s.type === 'dog') {
+      var i = S.info[key(s.name)] || {};
+      var at = roomOfDog(s.name);
+      var sx = sexOf(s.name);
+      el.innerHTML = '<h2>Dog</h2><h3>' + esc(s.name) + '</h3><p class="meta">' + (sx === 'M' ? 'Male' : sx === 'F' ? 'Female' : 'Sex not listed') + '</p><dl>' +
+        '<dt>Placed in</dt><dd>' + (at.length ? esc(at.join(' and ')) : 'Not placed yet') + '</dd>' +
+        '<dt>Guardian</dt><dd>' + esc(i.guardian || 'Not listed') + '</dd>' +
+        '<dt>Now at</dt><dd>' + esc(i.cur || 'Not listed') + '</dd>' +
+        '<dt>Proposed</dt><dd>' + esc(i.prop || 'Not listed') + '</dd></dl>';
+      return;
+    }
+    var z = ZONE_BY_ID[s.id];
+    var rows = S.rooms.filter(function (r) { return r.zone === s.id; });
+    if (!rows.length) {
+      el.innerHTML = '<h2>' + esc(z.kind === 'yard' || z.kind === 'strip' ? 'Yard' : 'Room') + '</h2><h3>' + esc(z.name) + '</h3><p class="meta">No dogs placed here.</p>' +
+        '<p class="hint">To place dogs here, add a column headed "' + esc(z.name) + '" to the New Haven Rooms tab.</p>';
+      return;
+    }
+    var dogs = [];
+    rows.forEach(function (r) { dogs = dogs.concat(r.dogs); });
+    var m = dogs.filter(function (d) { return sexOf(d) === 'M'; }).length, f = dogs.filter(function (d) { return sexOf(d) === 'F'; }).length;
+    el.innerHTML = '<h2>' + esc(z.kind === 'yard' ? 'Yard' : 'Room') + '</h2><h3>' + esc(z.name) + '</h3><p class="meta">' + dogs.length + (dogs.length === 1 ? ' dog' : ' dogs') +
+      (dogs.length ? ' · ' + f + ' female, ' + m + ' male' : '') + '</p>' +
+      (dogs.length ? '<div class="pills">' + dogs.map(pillDog).join('') + '</div>' : '<p class="hint">Empty for now.</p>');
+  }
+  function renderRooms() {
+    if (!S.loaded) { $('rooms').innerHTML = '<p class="empty">Rooms appear here once the sheet loads.</p>'; $('others').innerHTML = ''; return; }
+    $('rooms').innerHTML = S.rooms.map(function (r) {
+      var pressed = S.sel && S.sel.type === 'zone' && r.zone === S.sel.id;
+      return '<div class="room" data-zone="' + (r.zone || '') + '" aria-pressed="' + (pressed ? 'true' : 'false') + '"><div class="t"><span>' + esc(r.header) + '</span><span>' + r.dogs.length + '</span></div>' +
+        (r.dogs.length ? '<div class="pills">' + r.dogs.map(pillDog).join('') + '</div>' : '<span class="empty">No dogs placed yet</span>') + '</div>';
+    }).join('');
+    $('others').innerHTML = S.others.length ? '<p class="hint">' + S.others.map(function (r) { return esc(r.header); }).join(', ') +
+      (S.others.length === 1 ? ' has' : ' have') + ' no place on the plan yet, so ' + (S.others.length === 1 ? 'it shows' : 'they show') + ' only in this list.</p>' : '';
+  }
+
+  // ---------- events ----------
+  function bind() { /* delegated below */ }
+  document.addEventListener('click', function (e) {
+    var dog = e.target.closest && e.target.closest('[data-dog]');
+    if (dog) { S.sel = { type: 'dog', name: dog.getAttribute('data-dog') }; render(); return; }
+    var zone = e.target.closest && e.target.closest('[data-zone]');
+    if (zone && zone.getAttribute('data-zone')) { S.sel = { type: 'zone', id: zone.getAttribute('data-zone') }; render(); }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var t = e.target;
+    if (t && t.getAttribute && (t.getAttribute('data-dog') || t.getAttribute('data-zone')) && t.tagName !== 'BUTTON') { e.preventDefault(); t.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
+  });
+  $('showPlanned').addEventListener('change', function () { $('plannedG').hidden = !this.checked; });
+  $('refresh').addEventListener('click', function () {
+    if (!mcp) return;
+    setStatus('idle', 'Refreshing…');
+    mcp.invalidate(SERVER, 'get_values').catch(function () { return null; });
+  });
+  $('allow').addEventListener('click', function () { start(); });
+
+  // ---------- connection ----------
+  function watchAll() {
+    unsubs.forEach(function (u) { try { u(); } catch (e) { /* ignore */ } });
+    unsubs = [];
+    unsubs.push(mcp.watchTool(SERVER, 'get_values', { spreadsheetId: SHEET, range: RANGE_ROOMS }, function (ev) {
+      if (ev.type === 'data') { showNotice('', false); applyRooms(ev.result); } else handleErr(ev.error);
+    }, { refetchInterval: 30000 }));
+    unsubs.push(mcp.watchTool(SERVER, 'get_values', { spreadsheetId: SHEET, range: RANGE_DOGS }, function (ev) {
+      if (ev.type === 'data') applyDogs(ev.result);
+    }, { refetchInterval: 30000 }));
+  }
+  function start() {
+    if (!mcp) return;
+    allowPending = false;
+    if (!S.loaded) setStatus('idle', 'Connecting to Google Sheets…');
+    mcp.callTool(SERVER, 'get_values', { spreadsheetId: SHEET, range: RANGE_ROOMS }).then(function (r) {
+      showNotice('', false);
+      applyRooms(r);
+      watchAll();
+    }).catch(function (e) {
+      handleErr(e);
+      if (!needsAllow(e)) watchAll();
+    });
+  }
+
+  render();
+  function useCap(n) {
+    var c = window.claude;
+    return c && typeof c.use === 'function' ? Promise.resolve(c.use(n)).catch(function () { return null; }) : Promise.resolve(null);
+  }
+  Promise.all([useCap('db'), useCap('user'), useCap('mcp')]).then(function (r) {
+    db = r[0]; mcp = r[2];
+    var user = r[1];
+    return Promise.resolve(user ? user.canEdit() : false).catch(function () { return false; }).then(function (ok) {
+      canWrite = !!ok;
+      if (db) {
+        try { db.doc('snapshot/current').onSnapshot(onSnap, function () { snapLoaded = true; }); } catch (e) { snapLoaded = true; }
+      } else { snapLoaded = true; }
+      if (!mcp) {
+        $('refresh').hidden = true;
+        if (!db) {
+          setStatus('bad', 'Live data is not available here');
+          showNotice('Open this page while signed in to Claude to see the plan.', false);
+        }
+        return;
+      }
+      if (!started) { started = true; start(); }
+    });
+  }).catch(function () {
+    setStatus('bad', 'Live data is not available here');
+  });
+})();
+</script>

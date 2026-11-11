@@ -1,0 +1,43 @@
+New Haven — Room Planning
+"Sample data, not real. Place a dog by typing its name, green = placed, red = not a New Haven dog"
+Dogs assigned here,Not yet placed,,Placed in a room,Not in this haven,Placed twice
+36,2,,34,0,1
+DOG LIST,,,ROOMS — place dogs under each room
+All dogs (automatic),Not yet placed (automatic),,Plan B,Room 1,Room 2,Room 3,Room 4,Room 5,Room 6,Terrace,Yard C interlock
+36 dogs,2 dogs,,2 dogs,8 dogs,2 dogs,5 dogs,3 dogs,5 dogs,7 dogs,2 dogs,1 dogs
+Bhindi (Valad Pup),Yoyo,,Blackie,Pumbi,Plumby,Buster,Gunita,Bubu,Maapan,Kanji,Timmy
+Blackie,Zed,,Kokku,Socru,Cheepu,Kurumban,Veebukka,Paappi,Vellu,Tamu,
+Bubu,,,,Fumblebee,,Ivy,Stella,Timmy,Laddu (Valad Pup),,
+Buster,,,,Mavi,,Dungeli,,Mooben,Telly,,
+Cheepu,,,,Lumbi,,Feevi,,Zuumba,Rava (Valad Pup),,
+Dungeli,,,,Moofy,,,,,Bhindi (Valad Pup),,
+Feevi,,,,Teety,,,,,Rani,,
+Fumblebee,,,,Quimby,,,,,,,
+Gunita,,,,,,,,,,,
+Ivy,,,,,,,,,,,
+Kanji,,,,,,,,,,,
+Kokku,,,,,,,,,,,
+Kurumban,,,,,,,,,,,
+Laddu (Valad Pup),,,,,,,,,,,
+Lumbi,,,,,,,,,,,
+Maapan,,,,,,,,,,,
+Mavi,,,,,,,,,,,
+Mooben,,,,,,,,,,,
+Moofy,,,,,,,,,,,
+Paappi,,,,,,,,,,,
+Plumby,,,,,,,,,,,
+Pumbi,,,,,,,,,,,
+Quimby,,,,,,,,,,,
+Rani,,,,,,,,,,,
+Rava (Valad Pup),,,,,,,,,,,
+Socru,,,,,,,,,,,
+Stella,,,,,,,,,,,
+Tamu,,,,,,,,,,,
+Teety,,,,,,,,,,,
+Telly,,,,,,,,,,,
+Timmy,,,,,,,,,,,
+Veebukka,,,,,,,,,,,
+Vellu,,,,,,,,,,,
+Yoyo,,,,,,,,,,,
+Zed,,,,,,,,,,,
+Zuumba,,,,,,,,,,,
