@@ -28,6 +28,8 @@ body {
 a { color: var(--accent); }
 h1 { margin: 0; font-size: 28px; line-height: 1.15; }
 h2 { margin: 0 0 8px; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.nav { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; font-weight: 600; }
+.nav a { padding: 6px 0; }
 .sub { margin: 4px 0 0; color: var(--muted); }
 header { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; align-items: flex-end; }
 .status { font-size: 12px; color: var(--muted); font-family: ui-monospace, monospace; }
@@ -87,6 +89,7 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
 </head>
 <body>
 <div class="wrap">
+  <nav class="nav" aria-label="Site"><a href="../">&larr; The Haven home</a><a href="../new-haven-plan/">Live room plan &rarr;</a></nav>
   <header>
     <div>
       <h1>Build your own plan</h1>
@@ -100,11 +103,21 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
   <div class="card">
     <h2>How it works</h2>
     <ol class="steps">
-      <li>Drag dogs from <b>All dogs</b> into <b>Coming to the New Haven</b>.</li>
+      <li>Pick a starting point, or begin empty. Then drag dogs from <b>All dogs</b> into <b>Coming to the New Haven</b>.</li>
       <li>Drag them from there into a room or yard. You can move them again any time.</li>
       <li>Happy? Give your plan a name and publish it for others to see.</li>
     </ol>
     <p class="small" style="margin:8px 0 0">On a phone, press and hold a dog, then drag. Or just tap a dog and then tap <b>Put here</b> on the place you want.</p>
+  </div>
+
+  <div class="card" aria-label="Starting points">
+    <h2>Where do you want to start?</h2>
+    <div class="row">
+      <button class="btn primary" id="fromCurrent" type="button">Begin with the current plan</button>
+      <button class="btn" id="fromSheet" type="button">Begin with the dogs planned for New Haven</button>
+      <button class="btn" id="clear" type="button">Begin empty</button>
+    </div>
+    <p class="small" id="startMsg" role="status" style="margin:8px 0 0">The current plan is read live from the planning sheet. Your changes here never touch it.</p>
   </div>
 
   <div class="kpis" aria-label="Summary">
@@ -121,16 +134,12 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
       <input type="search" id="search" placeholder="Find a dog…" aria-label="Find a dog" autocomplete="off">
       <div class="zone list" data-zone="pool"><div class="drop" id="poolDrop"></div></div>
       <div class="legend"><span><i class="sx M"></i>Male</span><span><i class="sx F"></i>Female</span><span><i class="sx"></i>Not listed</span></div>
-      <div class="row" style="margin-top:8px"><button class="btn" id="fromSheet" type="button">Start with the dogs planned for New Haven</button></div>
     </section>
 
     <div class="right">
       <div class="zone" data-zone="chosen" id="chosenZone"></div>
       <div class="rooms" id="rooms"></div>
-      <div class="row">
-        <button class="btn" id="clear" type="button">Start again</button>
-        <span class="small" id="saved"></span>
-      </div>
+      <div class="small" id="saved"></div>
     </div>
   </div>
 
@@ -158,6 +167,7 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
   var CFG = window.HAVEN_BUILD_CONFIG || {};
   var SAMPLE = /[?&]sample=1/.test(location.search);
   var DOGS_URL = SAMPLE ? 'sample/dogs.csv' : (CFG.DOGS_CSV_URL || '');
+  var ROOMS_URL = SAMPLE ? 'sample/rooms.csv' : (CFG.ROOMS_CSV_URL || '');
   var API = SAMPLE ? 'sample/builds.json' : (CFG.BUILDS_API_URL || '');
   var POLL_MS = (CFG.POLL_SECONDS || 60) * 1000;
   var STORE = SAMPLE ? 'haven-build-draft-sample' : 'haven-build-draft-v1';
@@ -354,11 +364,46 @@ label { display: block; font-weight: 600; font-size: 13px; margin: 0 0 3px; }
     S.planned.forEach(function (n) { if (zoneOf(n) === 'pool') S.place[n] = 'chosen'; });
     S.undo = before; render(); notice('Added ' + S.planned.length + ' dogs from the sheet.', true, [{ label: 'Undo', fn: undo }]);
   });
+
+  // "Begin with the current plan": reads the live New Haven Rooms tab and copies it as a starting point.
+  var ZONE_ALIAS = { planb: 'yardB', yardb: 'yardB', yarda: 'yardA', yardc: 'yardC', yardcinterlock: 'yardC', interlock: 'yardC', yardd: 'yardD', yarde: 'yardE', terrace: 'terrace' };
+  for (var rn = 1; rn <= 6; rn++) ZONE_ALIAS['room' + rn] = 'room' + rn;
+  var curBusy = false;
+  $('fromCurrent').addEventListener('click', function () {
+    if (curBusy) return;
+    if (!ROOMS_URL) { $('startMsg').textContent = 'The current plan is not connected yet.'; return; }
+    if (!S.dogs.length) { $('startMsg').textContent = 'The dog list has not loaded yet. Try again in a moment.'; return; }
+    curBusy = true; $('startMsg').textContent = 'Reading the current plan…';
+    fetchText(ROOMS_URL).then(parseCsv).then(function (vals) {
+      var hi = -1, i;
+      for (i = 0; i < vals.length; i++) if (String((vals[i] || [])[0] || '').toLowerCase().indexOf('all dogs') === 0) { hi = i; break; }
+      if (hi < 0) throw new Error('layout');
+      var head = vals[hi], rows = vals.slice(hi + 2), byKey = {}, next = {}, skipped = 0, j;
+      S.dogs.forEach(function (n) { byKey[n.toLowerCase()] = n; });
+      function find(v) { v = String(v || '').trim().toLowerCase(); return byKey[v] || null; }
+      rows.forEach(function (r) { var d = find((r || [])[0]); if (d) next[d] = 'chosen'; });
+      for (j = 3; j < head.length; j++) {
+        var z = ZONE_ALIAS[String(head[j] || '').toLowerCase().replace(/[^a-z0-9]/g, '')];
+        rows.forEach(function (r) {
+          var v = String((r || [])[j] || '').trim(); if (!v) return;
+          var d = find(v);
+          if (!z || !d || next[d] === undefined || next[d] !== 'chosen') { if (v) skipped++; return; }
+          next[d] = z;
+        });
+      }
+      var before = JSON.stringify(S.place); S.place = next; S.sel = null; S.undo = before; render();
+      var n = Object.keys(next).length;
+      $('startMsg').textContent = 'Started from the current plan as of ' + clock(Date.now()) + '.';
+      notice('Copied the current plan: ' + n + ' dogs.' + (skipped ? ' ' + skipped + ' entries (such as the Kitchen or names not in the dog list) were left out.' : ''), true, [{ label: 'Undo', fn: undo }]);
+    }).catch(function (e) {
+      $('startMsg').textContent = e && e.message === 'layout' ? "The planning sheet doesn't look as expected." : "Couldn't read the current plan. Check your connection and try again.";
+    }).then(function () { curBusy = false; });
+  });
   function undo() { if (S.undo == null) return; S.place = JSON.parse(S.undo); S.undo = null; notice(''); render(); }
   $('clear').addEventListener('click', function () {
-    if (!Object.keys(S.place).length) return;
+    if (!Object.keys(S.place).length) { notice('Already empty.'); return; }
     S.undo = JSON.stringify(S.place); S.place = {}; S.sel = null; render();
-    notice('Plan cleared.', true, [{ label: 'Undo', fn: undo }]);
+    notice('Started again from empty.', true, [{ label: 'Undo', fn: undo }]);
   });
 
   // ---------- saving on this device ----------

@@ -62,6 +62,8 @@ body {
 .wrap { max-width: 1480px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 header { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: flex-end; justify-content: space-between; }
 h1 { margin: 0; font-size: 28px; line-height: 1.1; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+.nav { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; font-weight: 600; }
+.nav a { color: var(--accent); padding: 6px 0; }
 .sub { margin: 4px 0 0; color: var(--muted); }
 .tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .status { display: inline-flex; gap: 8px; align-items: center; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: var(--muted); }
@@ -139,6 +141,7 @@ svg text { font-family: 'Albert Sans', system-ui, sans-serif; }
 </head>
 <body>
 <div class="wrap">
+  <nav class="nav" aria-label="Site"><a href="../">&larr; The Haven home</a><a href="../build-your-own-plan/">Build your own plan &rarr;</a></nav>
   <header>
     <div>
       <h1>New Haven room plan</h1>
