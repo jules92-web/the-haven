@@ -44,6 +44,7 @@ function doPost(e) {
     var d = JSON.parse(e.postData.contents);
     if (d.website) return reply_({ ok: true });            // hidden trap field: bots fill it in
     lock.waitLock(10000);
+    if (d.action === 'checkadmin') { var k = adminKey_(); return reply_({ ok: k !== '' && String(d.admin || '') === k }); }
     if (d.action === 'delete') return deletePlan_(d);
     var title = safe_(d.title).slice(0, 60);
     var author = safe_(d.author).slice(0, 40);

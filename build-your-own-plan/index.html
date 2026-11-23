@@ -627,8 +627,14 @@ details.listview .rooms { margin-top: 10px; }
   }
   $('adminSave').addEventListener('click', function () {
     var k = $('adminKey').value.trim(); if (!k) return;
-    try { localStorage.setItem(ADMIN_KEY, k); } catch (e) {}
-    $('adminKey').value = ''; $('adminBox').hidden = true; renderBuilds(); notice('Admin mode is on for this device. You can now delete any plan.', true);
+    if (!API || SAMPLE) { notice('Admin mode is not available on the sample page.'); return; }
+    $('adminSave').disabled = true;
+    fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'checkadmin', admin: k }) })
+      .then(function (r) { return r.json(); }).then(function (j) {
+        if (j && j.ok) { try { localStorage.setItem(ADMIN_KEY, k); } catch (e) {} $('adminKey').value = ''; $('adminBox').hidden = true; renderBuilds(); notice('Admin mode is on for this device. You can now delete any plan.', true); }
+        else notice("That key isn't right, so admin mode stays off.");
+      }).catch(function () { notice("Couldn't check the key. Make sure the script has been updated (New version), then try again."); })
+      .then(function () { $('adminSave').disabled = false; });
   });
   var buildsOk = 0;
   function loadBuilds() {
