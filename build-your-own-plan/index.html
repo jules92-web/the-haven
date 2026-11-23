@@ -390,6 +390,7 @@ details.listview .rooms { margin-top: 10px; }
       var dogs = [], info = {}, planned = [];
       rows.slice(1).forEach(function (r) {
         var n = String(r[iN] || '').trim(); if (!n || info[n]) return;
+        if (/^[\d.,\s]+$/.test(n) || /^(total|count|sum)\b/i.test(String(r[0] || '').trim())) return; // skip total/count rows
         dogs.push(n);
         info[n] = { gender: iG >= 0 ? r[iG] : '', current: iC >= 0 ? r[iC] : '' };
         if (iP >= 0 && /new haven/i.test(r[iP] || '')) planned.push(n);
