@@ -346,7 +346,7 @@ details.listview .rooms { margin-top: 10px; }
     MZONES.forEach(function (z) { out.push(mzContent(z)); });
     $('plan').innerHTML = out.join('');
   }
-  $('showPlanned').addEventListener('change', function () { var g = $('plannedG'); if (g) g.hidden = !this.checked; });
+  $('showPlanned').addEventListener('change', function () { var g = $('plannedG'); if (g) { if (this.checked) g.removeAttribute('hidden'); else g.setAttribute('hidden', ''); } });
 
   // ---------- CSV ----------
   function parseCsv(text) {

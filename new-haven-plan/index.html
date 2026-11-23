@@ -534,7 +534,7 @@ svg text { font-family: 'Albert Sans', system-ui, sans-serif; }
     var t = e.target;
     if (t && t.getAttribute && (t.getAttribute('data-dog') || t.getAttribute('data-zone')) && t.tagName !== 'BUTTON') { e.preventDefault(); t.dispatchEvent(new MouseEvent('click', { bubbles: true })); }
   });
-  $('showPlanned').addEventListener('change', function () { $('plannedG').hidden = !this.checked; });
+  $('showPlanned').addEventListener('change', function () { var g = $('plannedG'); if (g) { if (this.checked) g.removeAttribute('hidden'); else g.setAttribute('hidden', ''); } });
 
   // ---------- status ----------
   function setStatus(tone, text) {
