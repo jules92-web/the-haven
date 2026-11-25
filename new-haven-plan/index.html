@@ -191,7 +191,7 @@ svg text { font-family: 'Albert Sans', system-ui, sans-serif; }
         <ul class="planned-list">
           <li><span class="num">1</span><span>Yard B gated off: a gate across the corridor at the top of the house, in line with the W.C., and a fence in line with the Yard A gate out to the house wall.</span></li>
           <li><span class="num">2</span><span>Possible fence and gate between the bottom right corner of the Kitchen and Yard D.</span></li>
-          <li><span class="num">3</span><span>Gate across the middle of the Yard C interlock.</span></li>
+          <li><span class="num">3</span><span>Gate across the Yard C interlock, in line with the bottom left corner of Room 4.</span></li>
         </ul>
       </section>
     </div>
@@ -377,8 +377,8 @@ svg text { font-family: 'Albert Sans', system-ui, sans-serif; }
       '<g><title>1. Yard B gated off: fence in line with the Yard A gate, out to the house wall</title>' + seg([[233,100],[260,100]], 'var(--planned)', 6, '10 7') + '</g>' +
       '<g><title>2. Possible fence and gate between the bottom right corner of the Kitchen and Yard D</title>' + seg([[544,207],[544,222]], 'var(--planned)', 6, '10 7') +
       seg([[544,222],[544,234]], 'var(--gate)', 8, '6 5') + seg([[544,234],[544,249]], 'var(--planned)', 6, '10 7') + '</g>' +
-      '<g><title>3. Gate across the middle of the Yard C interlock</title>' + seg([[402,207],[402,249]], 'var(--planned)', 6, '10 7') + '</g>' +
-      badge(mx(246), my(58) - 4, '1') + badge(mx(534), my(238), '2') + badge(mx(402) + 22, my(228), '3') + '</g>');
+      '<g><title>3. Gate across the Yard C interlock, in line with the bottom left corner of Room 4</title>' + seg([[413,207],[413,249]], 'var(--planned)', 6, '10 7') + '</g>' +
+      badge(mx(246), my(58) - 4, '1') + badge(mx(534), my(238), '2') + badge(mx(413) + 22, my(228), '3') + '</g>');
     // text
     out.push(text('Interlock', mx(430), 45, 'zn', 'middle'));
     out.push(text('Driveway →', mx(150), my(295), 'zn', 'start'));

@@ -355,9 +355,9 @@ textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(
     DOORS.forEach(function (l) { out.push(seg(l, 'var(--wall)', 6)); });
     GATES.forEach(function (l) { out.push(seg(l, 'var(--gate)', 8)); });
     out.push('<g class="planned-g" id="plannedG"' + ($('showPlanned').checked ? '' : ' hidden') + ' pointer-events="none">' +
-      seg([[413,17],[413,35]], 'var(--planned)', 6, '10 7') + seg([[402,207],[402,249]], 'var(--planned)', 6, '10 7') + seg([[233,100],[260,100]], 'var(--planned)', 6, '10 7') +
+      seg([[413,17],[413,35]], 'var(--planned)', 6, '10 7') + seg([[413,207],[413,249]], 'var(--planned)', 6, '10 7') + seg([[233,100],[260,100]], 'var(--planned)', 6, '10 7') +
       seg([[544,207],[544,222]], 'var(--planned)', 6, '10 7') + seg([[544,222],[544,234]], 'var(--gate)', 8, '6 5') + seg([[544,234],[544,249]], 'var(--planned)', 6, '10 7') +
-      badge(mx(246), my(58) - 4, '1') + badge(mx(534), my(238), '2') + badge(mx(402) + 22, my(228), '3') + '</g>');
+      badge(mx(246), my(58) - 4, '1') + badge(mx(534), my(238), '2') + badge(mx(413) + 22, my(228), '3') + '</g>');
     out.push(mtext('Interlock', mx(430), 45, 'middle'), mtext('Driveway →', mx(150), my(295), 'start'), mtext('Parking lot ↓', mx(379), my(315), 'middle'));
     MZONES.forEach(function (z) { out.push(mzContent(z)); });
     $('plan').innerHTML = out.join('');
