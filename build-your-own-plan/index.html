@@ -115,6 +115,10 @@ details.listview summary { cursor: pointer; font-weight: 600; color: var(--accen
 details.listview .rooms { margin-top: 10px; }
 .del { margin-top: 4px; }
 .btn.danger { border-color: var(--bad); color: var(--bad); }
+.note { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+.note p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.notes { display: grid; gap: 10px; margin-top: 12px; }
+textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); min-height: 80px; resize: vertical; margin-bottom: 8px; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 </style>
 </head>
@@ -183,6 +187,7 @@ details.listview .rooms { margin-top: 10px; }
         <p class="small" style="margin:8px 0 0">Not to scale. Front at the bottom. If a room is too full to show every name, open the list below.</p>
       </section>
       <details class="card listview"><summary>See every room as a list</summary><div class="rooms" id="rooms"></div></details>
+      <div class="row"><button class="btn" id="copyMine" type="button">Copy my plan as text</button><span class="small" id="copyMsg" role="status"></span></div>
       <div class="small" id="saved"></div>
     </div>
   </div>
@@ -204,6 +209,17 @@ details.listview .rooms { margin-top: 10px; }
     <div class="builds" id="builds"></div>
     <p class="small" style="margin:12px 0 0"><button type="button" class="btn" data-admin="1" style="padding:4px 10px;font-weight:400">Haven admin</button></p>
     <div class="row" id="adminBox" hidden style="margin-top:8px"><input type="text" id="adminKey" placeholder="Admin key" style="max-width:240px;margin:0" autocomplete="off"><button type="button" class="btn" id="adminSave">Turn on admin mode</button></div>
+  </section>
+
+  <section class="card" aria-label="Notes and comments">
+    <h2>Notes and comments on the current plan <span id="notesN"></span></h2>
+    <p class="small" style="margin-top:0">Anyone can read these, so please keep them kind and don't include phone numbers or private details. Your note is shared with everyone who opens this page.</p>
+    <label for="nText">Your note</label>
+    <textarea id="nText" maxlength="500" placeholder="e.g. Room 4 feels crowded with five dogs. Could Moofy go to the Terrace?"></textarea>
+    <div class="pub"><div><label for="nAuthor">Your first name (optional)</label><input type="text" id="nAuthor" maxlength="40" autocomplete="off"></div>
+      <div class="trap" aria-hidden="true"><label for="nWeb">Leave this empty</label><input type="text" id="nWeb" tabindex="-1" autocomplete="off"></div></div>
+    <div class="row"><button class="btn primary" id="postNote" type="button">Post note</button><span class="small" id="noteMsg" role="status"></span></div>
+    <div class="notes" id="notes"></div>
   </section>
 </div>
 
@@ -227,7 +243,7 @@ details.listview .rooms { margin-top: 10px; }
   var ROOM_NAME = { chosen: 'Coming to the New Haven', pool: 'All dogs' };
   ROOMS.forEach(function (r) { ROOM_NAME[r.id] = r.name; });
 
-  var S = { dogs: [], info: {}, planned: [], place: {}, sel: null, search: '', builds: [], undo: null };
+  var S = { notes: [], dogs: [], info: {}, planned: [], place: {}, sel: null, search: '', builds: [], undo: null };
   var drag = null, suppressClick = false;
 
   function $(id) { return document.getElementById(id); }
@@ -447,7 +463,7 @@ details.listview .rooms { margin-top: 10px; }
     } else bar.hidden = true;
     var q2 = S.search; // keep search box content
     if ($('search').value !== q2) $('search').value = q2;
-    renderBuilds();
+    renderBuilds(); renderNotes();
     save();
   }
 
@@ -460,13 +476,17 @@ details.listview .rooms { margin-top: 10px; }
   }
   document.addEventListener('click', function (e) {
     if (suppressClick) { suppressClick = false; return; }
-    var t = e.target.closest ? e.target.closest('[data-put],[data-cancel],[data-dog],[data-open],[data-del],[data-delyes],[data-delno],[data-admin],.mz.target') : null;
+    var t = e.target.closest ? e.target.closest('[data-copy],[data-ndel],[data-ndelyes],[data-ndelno],[data-put],[data-cancel],[data-dog],[data-open],[data-del],[data-delyes],[data-delno],[data-admin],.mz.target') : null;
     if (!t) return;
     if (t.hasAttribute('data-put')) { if (S.sel) moveDog(S.sel, t.getAttribute('data-put')); }
     else if (t.hasAttribute('data-cancel')) { S.sel = null; render(); }
     else if (t.hasAttribute('data-dog')) { var n = t.getAttribute('data-dog'); S.sel = S.sel === n ? null : n; render(); var again = document.querySelector('[data-dog][aria-pressed="true"]'); if (again) again.focus(); }
     else if (t.classList.contains('mz')) { if (S.sel) moveDog(S.sel, t.getAttribute('data-zone')); }
     else if (t.hasAttribute('data-open')) openBuild(t.getAttribute('data-open'));
+    else if (t.hasAttribute('data-copy')) { var cb = S.builds[+t.getAttribute('data-copy')]; if (cb) copyText(planText(cb.title, cb.place || {}), $('buildsMsg')); }
+    else if (t.hasAttribute('data-ndel')) { S.confirmNote = t.getAttribute('data-ndel'); renderNotes(); }
+    else if (t.hasAttribute('data-ndelno')) { S.confirmNote = null; renderNotes(); }
+    else if (t.hasAttribute('data-ndelyes')) deleteNote(t.getAttribute('data-ndelyes'));
     else if (t.hasAttribute('data-del')) { S.confirmDel = t.getAttribute('data-del'); renderBuilds(); }
     else if (t.hasAttribute('data-delno')) { S.confirmDel = null; renderBuilds(); }
     else if (t.hasAttribute('data-delyes')) deleteBuild(t.getAttribute('data-delyes'));
@@ -588,6 +608,26 @@ details.listview .rooms { margin-top: 10px; }
   function getMine() { try { return JSON.parse(localStorage.getItem(MINE_KEY) || '{}') || {}; } catch (e) { return {}; } }
   function setMine(m) { try { localStorage.setItem(MINE_KEY, JSON.stringify(m)); } catch (e) {} }
   function getAdmin() { try { return localStorage.getItem(ADMIN_KEY) || ''; } catch (e) { return ''; } }
+  function planText(title, place) {
+    var lines = ['Plan: ' + (title || 'My plan'), 'Rooms and yards (from the Build your own plan page):'], total = 0;
+    ROOMS.forEach(function (r) { var l = place[r.id]; if (l && l.length) { lines.push(r.name + ': ' + l.join(', ')); total += l.length; } });
+    if (place.chosen && place.chosen.length) { lines.push('Coming to the New Haven, not in a room yet: ' + place.chosen.join(', ')); total += place.chosen.length; }
+    lines.push('Dogs at the New Haven in this plan: ' + total);
+    return lines.join('\n');
+  }
+  function copyText(text, msgEl) {
+    function done(ok) { msgEl.textContent = ok ? 'Copied! Paste it wherever you need it.' : "Couldn't copy. Please select the text yourself."; }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(function () { done(true); }, function () { fallback(); }); } else fallback();
+    function fallback() {
+      var t = document.createElement('textarea'); t.value = text; t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;left:-9999px;top:0';
+      document.body.appendChild(t); t.select(); var ok = false; try { ok = document.execCommand('copy'); } catch (e) {} t.remove(); done(ok);
+    }
+  }
+  $('copyMine').addEventListener('click', function () {
+    var plan = currentPlan();
+    if (!Object.keys(plan).length) { $('copyMsg').textContent = 'Nothing to copy yet. Add some dogs first.'; return; }
+    copyText(planText($('pTitle').value.trim(), plan), $('copyMsg'));
+  });
   var pubBusy = false;
   $('publish').addEventListener('click', function () {
     var title = $('pTitle').value.trim(), plan = currentPlan(), n = Object.keys(plan).reduce(function (a, z) { return a + plan[z].length; }, 0);
@@ -637,13 +677,52 @@ details.listview .rooms { margin-top: 10px; }
       }).catch(function () { notice("Couldn't check the key. Make sure the script has been updated (New version), then try again."); })
       .then(function () { $('adminSave').disabled = false; });
   });
+  // ---------- notes ----------
+  var noteBusy = false;
+  function noteDel(n) {
+    if (!(getMine()[n.id] || getAdmin())) return '';
+    if (S.confirmNote === n.id) return '<span class="small">Delete this note?</span> <button type="button" class="btn danger" data-ndelyes="' + esc(n.id) + '">Yes, delete</button> <button type="button" class="btn" data-ndelno="1">Keep it</button>';
+    return '<button type="button" class="btn" data-ndel="' + esc(n.id) + '">' + (getMine()[n.id] ? 'Delete my note' : 'Delete (admin)') + '</button>';
+  }
+  function renderNotes() {
+    $('notesN').textContent = S.notes.length ? '(' + S.notes.length + ')' : '';
+    $('notes').innerHTML = S.notes.length ? S.notes.map(function (n) {
+      var when = n.time ? new Date(n.time).toLocaleDateString([], { day: 'numeric', month: 'short' }) : '';
+      return '<article class="note"><p>' + esc(n.text) + '</p><div class="small">' + (n.author ? esc(n.author) + ' · ' : '') + esc(when) + '</div><div class="del">' + noteDel(n) + '</div></article>';
+    }).join('') : '<p class="small" style="margin:0">' + (API ? 'No notes yet. Be the first to add one.' : "Notes aren't switched on yet.") + '</p>';
+  }
+  $('postNote').addEventListener('click', function () {
+    var text = $('nText').value.trim(), msg = $('noteMsg');
+    if (!API || SAMPLE) { msg.textContent = SAMPLE ? 'This is the sample page, so nothing is really posted.' : "Notes aren't switched on yet."; return; }
+    if (!text) { msg.textContent = 'Please write a note first.'; $('nText').focus(); return; }
+    if (noteBusy) return;
+    var id = rnd(6), code = rnd(10); noteBusy = true; $('postNote').disabled = true; msg.textContent = 'Posting…';
+    fetch(API, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'note', id: id, code: code, text: text, author: $('nAuthor').value.trim(), website: $('nWeb').value }) })
+      .then(function () {
+        var m = getMine(); m[id] = code; setMine(m); $('nText').value = ''; msg.textContent = 'Posted! It should show below in a few seconds.';
+        S.notes.unshift({ id: id, time: new Date().toISOString(), text: text, author: $('nAuthor').value.trim() }); renderNotes();
+        setTimeout(loadBuilds, 3000);
+      }).catch(function () { msg.textContent = "Couldn't post. Check your connection and try again."; })
+      .then(function () { setTimeout(function () { noteBusy = false; $('postNote').disabled = false; }, 3000); });
+  });
+  function deleteNote(id) {
+    var mine = getMine();
+    S.confirmNote = null; $('noteMsg').textContent = 'Deleting…';
+    postJson({ action: 'delete', kind: 'note', id: id, code: mine[id] || '', admin: getAdmin() }).then(function () {
+      S.notes = S.notes.filter(function (n) { return n.id !== id; }); renderNotes();
+      setTimeout(function () { loadBuilds().then(function () {
+        if (S.notes.some(function (n) { return n.id === id; })) $('noteMsg').textContent = "That note wasn't deleted. Only the person who wrote it (on the same phone or browser) or the Haven admin can delete it.";
+        else { var m = getMine(); delete m[id]; setMine(m); $('noteMsg').textContent = 'Deleted.'; }
+      }); }, 3000);
+    }).catch(function () { $('noteMsg').textContent = "Couldn't delete right now. Check your connection and try again."; renderNotes(); });
+  }
   var buildsOk = 0;
   function loadBuilds() {
     if (!API) { $('buildsMsg').textContent = "Publishing isn't switched on yet. Once it is, plans people publish will appear here."; return Promise.resolve(); }
     return fetchText(API).then(function (t) {
       var j = JSON.parse(t);
       if (!j || !Array.isArray(j.builds)) throw new Error('bad');
-      S.builds = j.builds; buildsOk = Date.now(); if (!drag) renderBuilds();
+      S.builds = j.builds; S.notes = Array.isArray(j.notes) ? j.notes : S.notes; buildsOk = Date.now(); if (!drag) { renderBuilds(); renderNotes(); }
     }).catch(function () {
       $('buildsMsg').textContent = buildsOk ? "Couldn't refresh, showing plans from " + clock(buildsOk) : "Couldn't load the published plans right now.";
     });
@@ -665,7 +744,7 @@ details.listview .rooms { margin-top: 10px; }
       });
       var when = b.time ? new Date(b.time).toLocaleDateString([], { day: 'numeric', month: 'short' }) : '';
       return '<article class="build"><h3>' + esc(b.title || 'Untitled plan') + '</h3><div class="small">' + (b.author ? 'by ' + esc(b.author) + ' · ' : '') + esc(when) + ' · ' + total + ' dogs, ' + inRooms + ' in rooms</div>' +
-        '<details><summary>See the rooms</summary><ul>' + rows + '</ul></details><div class="row go"><button type="button" class="btn" data-open="' + i + '">Open in the builder</button>' + delControls(b) + '</div></article>';
+        '<details><summary>See the rooms</summary><ul>' + rows + '</ul></details><div class="row go"><button type="button" class="btn" data-open="' + i + '">Open in the builder</button><button type="button" class="btn" data-copy="' + i + '">Copy as text</button>' + delControls(b) + '</div></article>';
     }).join('');
   }
   function openBuild(i) {

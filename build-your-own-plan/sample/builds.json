@@ -1,4 +1,56 @@
-{"builds":[
-{"id":"s2","time":"2026-11-10T16:20:00Z","title":"Quiet Room 2 idea","author":"Sample","place":{"chosen":["Telly"],"room1":["Bubu","Blackie"],"room2":["Buster","Kokku"],"yardB":["Muffin"]}},
-{"id":"s1","time":"2026-11-09T09:05:00Z","title":"Everyone in Room 1","author":"","place":{"room1":["Bubu","Blackie","Buster","Kokku","Muffin","Telly"]}}
-]}
+{
+ "builds": [
+  {
+   "id": "s2",
+   "time": "2026-11-10T16:20:00Z",
+   "title": "Quiet Room 2 idea",
+   "author": "Sample",
+   "place": {
+    "chosen": [
+     "Telly"
+    ],
+    "room1": [
+     "Bubu",
+     "Blackie"
+    ],
+    "room2": [
+     "Buster",
+     "Kokku"
+    ],
+    "yardB": [
+     "Muffin"
+    ]
+   }
+  },
+  {
+   "id": "s1",
+   "time": "2026-11-09T09:05:00Z",
+   "title": "Everyone in Room 1",
+   "author": "",
+   "place": {
+    "room1": [
+     "Bubu",
+     "Blackie",
+     "Buster",
+     "Kokku",
+     "Muffin",
+     "Telly"
+    ]
+   }
+  }
+ ],
+ "notes": [
+  {
+   "id": "n1",
+   "time": "2026-11-10T18:00:00Z",
+   "text": "Room 4 feels crowded with five dogs. Could Moofy go to the Terrace?",
+   "author": "Sample"
+  },
+  {
+   "id": "n2",
+   "time": "2026-11-09T11:30:00Z",
+   "text": "Love the idea of keeping Kunjamma's pups together.",
+   "author": ""
+  }
+ ]
+}
