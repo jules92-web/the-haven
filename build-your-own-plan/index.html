@@ -548,8 +548,9 @@ textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(
   $('fromSheet').addEventListener('click', function () {
     if (!S.planned.length) { notice('The dog list does not say which dogs are planned for the New Haven.'); return; }
     var before = JSON.stringify(S.place);
-    S.planned.forEach(function (n) { if (zoneOf(n) === 'pool') S.place[n] = 'chosen'; });
-    S.undo = before; render(); notice('Added ' + S.planned.length + ' dogs from the sheet.', true, [{ label: 'Undo', fn: undo }]);
+    S.place = {}; S.sel = null;
+    S.planned.forEach(function (n) { S.place[n] = 'chosen'; });
+    S.undo = before; render(); notice('Started from the ' + S.planned.length + ' dogs planned for the New Haven. Everything else was cleared.', true, [{ label: 'Undo', fn: undo }]);
   });
 
   // "Begin with the current plan": reads the live New Haven Rooms tab and copies it as a starting point.
