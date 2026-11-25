@@ -169,7 +169,7 @@ svg text { font-family: 'Albert Sans', system-ui, sans-serif; }
   <div class="main">
     <section class="card">
       <h2>Site plan</h2>
-      <div class="planbox"><svg id="plan" viewBox="0 0 1530 1110" role="img" aria-label="Site plan of the Haven with the dogs placed in each room"></svg></div>
+      <div class="planbox"><svg id="plan" viewBox="0 0 1620 1110" role="img" aria-label="Site plan of the Haven with the dogs placed in each room"></svg></div>
       <div class="legend">
         <span><i class="sw" style="background:var(--yard);border:1px solid var(--yard-line)"></i>Yard</span>
         <span><i class="sw" style="background:var(--paved);border:1px solid var(--paved-line)"></i>Interlock / terrace</span>
@@ -191,7 +191,7 @@ svg text { font-family: 'Albert Sans', system-ui, sans-serif; }
         <ul class="planned-list">
           <li><span class="num">1</span><span>Yard B gated off: a gate across the corridor at the top of the house, in line with the W.C., and a fence in line with the Yard A gate out to the house wall.</span></li>
           <li><span class="num">2</span><span>Possible fence and gate between the bottom right corner of the Kitchen and Yard D.</span></li>
-          <li><span class="num">3</span><span>Gate across the Yard C interlock, in line with the bottom left corner of Room 4.</span></li>
+          <li><span class="num">3</span><span>Gate across the Yard C interlock, splitting it into Yard C1 (left) and Yard C2 (right), in line with the bottom left corner of Room 4.</span></li>
         </ul>
       </section>
     </div>
@@ -214,7 +214,7 @@ svg text { font-family: 'Albert Sans', system-ui, sans-serif; }
   var POLL_MS = (CFG.POLL_SECONDS || 60) * 1000;
 
   // ---------- geometry (original sketch coordinates, stretched into a roomier layout) ----------
-  var AX = [[16,20],[114,128],[124,140],[233,290],[260,330],[334,530],[413,750],[459,880],[479,962],[483,1000],[544,1200],[570,1250],[586,1280],[698,1500]];
+  var AX = [[16,20],[114,128],[124,140],[233,290],[260,330],[334,530],[413,750],[459,880],[479,962],[483,1000],[544,1200],[570,1330],[586,1355],[698,1590]];
   var AY = [[17,10],[35,60],[81,290],[100,335],[112,364],[144,455],[145,457],[180,535],[200,587],[207,675],[215,732],[233,781],[249,815],[439,1075]];
   function interp(a, v) {
     var i = 1;
@@ -232,7 +232,9 @@ svg text { font-family: 'Albert Sans', system-ui, sans-serif; }
     { id: 'yardB', name: 'Yard B', kind: 'yard', poly: [[124,17],[233,17],[233,100],[124,100]], box: [126,19,231,98] },
     { id: 'yardD', name: 'Yard D', kind: 'yard', poly: [[486,249],[570,249],[586,439],[469,439]], box: [492,252,568,436], note: 'continues ↓' },
     { id: 'yardE', name: 'Yard E', kind: 'yard', poly: [[570,233],[698,233],[698,439],[586,439],[570,249]], box: [592,240,694,436], note: 'continues ↓' },
-    { id: 'yardC', name: 'Yard C interlock', kind: 'strip', box: [262,209,542,247] },
+    { id: 'yardC1', name: 'Yard C1', kind: 'strip', box: [262,209,411,247] },
+    { id: 'yardC2', name: 'Yard C2', kind: 'strip', box: [415,209,542,247] },
+    { id: 'interlockK', name: 'Interlock K', kind: 'strip', short: 'Int. K', box: [546,84,568,205] },
     { id: 'room3', name: 'Room 3', kind: 'room', rect: [260,35,334,145] },
     { id: 'room2', name: 'Room 2', kind: 'room', rect: [260,145,334,207] },
     { id: 'room1', name: 'Room 1', kind: 'room', rect: [334,35,413,180] },
@@ -248,7 +250,7 @@ svg text { font-family: 'Albert Sans', system-ui, sans-serif; }
   var ZONE_BY_ID = {};
   ZONES.forEach(function (z) { ZONE_BY_ID[z.id] = z; });
 
-  var ALIAS = { planb: 'yardB', yardb: 'yardB', yarda: 'yardA', yardc: 'yardC', yardcinterlock: 'yardC', interlock: 'yardC', yardcinterlockstrip: 'yardC', yardd: 'yardD', darde: 'yardE', yarde: 'yardE',
+  var ALIAS = { planb: 'yardB', yardb: 'yardB', yarda: 'yardA', yardc: 'yardC1', yardcinterlock: 'yardC1', interlock: 'yardC1', yardcinterlockstrip: 'yardC1', yardc1: 'yardC1', yardc2: 'yardC2', interlockk: 'interlockK', kinterlock: 'interlockK', yardd: 'yardD', darde: 'yardE', yarde: 'yardE',
     terrace: 'terrace', kitchen: 'kitchen', k: 'kitchen', wc: 'wc', storage: 'storage', s: 'storage' };
   for (var n = 1; n <= 6; n++) ALIAS['room' + n] = 'room' + n;
   function zoneFor(header) {
@@ -359,8 +361,7 @@ svg text { font-family: 'Albert Sans', system-ui, sans-serif; }
     // house
     ZONES.filter(function (z) { return z.kind === 'room' || z.kind === 'terrace'; }).forEach(function (z) { out.push(zoneShape(z, zoneData[z.id])); });
     // yard C strip hit area
-    var yc = ZONE_BY_ID.yardC;
-    out.push(zoneShape(yc, zoneData.yardC));
+    ZONES.filter(function (z) { return z.kind === 'strip'; }).forEach(function (z) { out.push(zoneShape(z, zoneData[z.id])); });
     // stairs
     STAIR_Y.forEach(function (y) {
       out.push('<line x1="' + mx(234) + '" x2="' + mx(259) + '" y1="' + my(y) + '" y2="' + my(y) + '" stroke="var(--paved-line)" stroke-width="1.5"/>');
@@ -378,7 +379,7 @@ svg text { font-family: 'Albert Sans', system-ui, sans-serif; }
       '<g><title>2. Possible fence and gate between the bottom right corner of the Kitchen and Yard D</title>' + seg([[544,207],[544,222]], 'var(--planned)', 6, '10 7') +
       seg([[544,222],[544,234]], 'var(--gate)', 8, '6 5') + seg([[544,234],[544,249]], 'var(--planned)', 6, '10 7') + '</g>' +
       '<g><title>3. Gate across the Yard C interlock, in line with the bottom left corner of Room 4</title>' + seg([[413,207],[413,249]], 'var(--planned)', 6, '10 7') + '</g>' +
-      badge(mx(246), my(58) - 4, '1') + badge(mx(534), my(238), '2') + badge(mx(413) + 22, my(228), '3') + '</g>');
+      badge(mx(246), my(58) - 4, '1') + badge(mx(534), my(238), '2') + badge(mx(413), my(249) + 20, '3') + '</g>');
     // text
     out.push(text('Interlock', mx(430), 45, 'zn', 'middle'));
     out.push(text('Driveway →', mx(150), my(295), 'zn', 'start'));

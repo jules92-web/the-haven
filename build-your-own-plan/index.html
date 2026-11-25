@@ -176,7 +176,7 @@ textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(
       <section class="card" aria-label="Site plan">
         <div class="row" style="justify-content:space-between"><h2 style="margin:0">Site plan</h2>
           <label class="toggle"><input type="checkbox" id="showPlanned" autocomplete="off" checked> Show planned fences</label></div>
-        <div class="planbox"><svg id="plan" viewBox="0 0 1530 1110" role="group" aria-label="Site plan of the Haven. Drop dogs into rooms and yards."></svg></div>
+        <div class="planbox"><svg id="plan" viewBox="0 0 1620 1110" role="group" aria-label="Site plan of the Haven. Drop dogs into rooms and yards."></svg></div>
         <div class="plegend">
           <span><i class="sw" style="background:var(--yard);border:1px solid var(--yard-line)"></i>Yard</span>
           <span><i class="sw" style="background:var(--paved);border:1px solid var(--paved-line)"></i>Interlock / terrace</span>
@@ -238,7 +238,7 @@ textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(
     { id: 'room1', name: 'Room 1' }, { id: 'room2', name: 'Room 2' }, { id: 'room3', name: 'Room 3' },
     { id: 'room4', name: 'Room 4' }, { id: 'room5', name: 'Room 5' }, { id: 'room6', name: 'Room 6' },
     { id: 'terrace', name: 'Terrace' }, { id: 'yardA', name: 'Yard A' }, { id: 'yardB', name: 'Yard B' },
-    { id: 'yardC', name: 'Yard C interlock' }, { id: 'yardD', name: 'Yard D' }, { id: 'yardE', name: 'Yard E' }
+    { id: 'yardC1', name: 'Yard C1' }, { id: 'yardC2', name: 'Yard C2' }, { id: 'interlockK', name: 'Interlock K' }, { id: 'yardD', name: 'Yard D' }, { id: 'yardE', name: 'Yard E' }
   ];
   var ROOM_NAME = { chosen: 'Coming to the New Haven', pool: 'All dogs' };
   ROOMS.forEach(function (r) { ROOM_NAME[r.id] = r.name; });
@@ -256,7 +256,7 @@ textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(
   function dogsIn(zone) { return S.dogs.filter(function (n) { return zoneOf(n) === zone; }); }
 
   // ---------- site plan geometry (same as the New Haven room plan) ----------
-  var AX = [[16,20],[114,128],[124,140],[233,290],[260,330],[334,530],[413,750],[459,880],[479,962],[483,1000],[544,1200],[570,1250],[586,1280],[698,1500]];
+  var AX = [[16,20],[114,128],[124,140],[233,290],[260,330],[334,530],[413,750],[459,880],[479,962],[483,1000],[544,1200],[570,1330],[586,1355],[698,1590]];
   var AY = [[17,10],[35,60],[81,290],[100,335],[112,364],[144,455],[145,457],[180,535],[200,587],[207,675],[215,732],[233,781],[249,815],[439,1075]];
   function interp(a, v) { var i = 1; while (i < a.length - 1 && v > a[i][0]) i++; var p = a[i - 1], q = a[i]; return p[1] + (v - p[0]) * (q[1] - p[1]) / (q[0] - p[0]); }
   function mx(x) { return interp(AX, x); }
@@ -269,7 +269,9 @@ textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(
     { id: 'yardB', name: 'Yard B', kind: 'yard', drop: true, poly: [[124,17],[233,17],[233,100],[124,100]], box: [126,19,231,98] },
     { id: 'yardD', name: 'Yard D', kind: 'yard', drop: true, poly: [[486,249],[570,249],[586,439],[469,439]], box: [492,252,568,436], note: 'continues ↓' },
     { id: 'yardE', name: 'Yard E', kind: 'yard', drop: true, poly: [[570,233],[698,233],[698,439],[586,439],[570,249]], box: [592,240,694,436], note: 'continues ↓' },
-    { id: 'yardC', name: 'Yard C interlock', kind: 'strip', drop: true, box: [262,209,542,247] },
+    { id: 'yardC1', name: 'Yard C1', kind: 'strip', drop: true, box: [262,209,411,247] },
+    { id: 'yardC2', name: 'Yard C2', kind: 'strip', drop: true, box: [415,209,542,247] },
+    { id: 'interlockK', name: 'Interlock K', kind: 'strip', drop: true, short: 'Int. K', box: [546,84,568,205] },
     { id: 'room3', name: 'Room 3', kind: 'room', drop: true, rect: [260,35,334,145] },
     { id: 'room2', name: 'Room 2', kind: 'room', drop: true, rect: [260,145,334,207] },
     { id: 'room1', name: 'Room 1', kind: 'room', drop: true, rect: [334,35,413,180] },
@@ -331,7 +333,7 @@ textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(
     if (z.note) o.push('<text class="zn" x="' + (x0 + 10).toFixed(1) + '" y="' + (y0 + 52).toFixed(1) + '" pointer-events="none">' + esc(z.note) + '</text>');
     if (!z.drop) return o.join('');
     o.push('<text class="zc" x="' + (x1 - 10).toFixed(1) + '" y="' + (y0 + 28).toFixed(1) + '" text-anchor="end" pointer-events="none">' + dogs.length + '</text>');
-    if (!dogs.length) { o.push('<text class="zn" x="' + (x0 + 10).toFixed(1) + '" y="' + (y0 + 54).toFixed(1) + '" pointer-events="none">drop dogs here</text>'); return o.join(''); }
+    if (!dogs.length) { o.push('<text class="zn" x="' + (x0 + 10).toFixed(1) + '" y="' + (y0 + (z.note ? 78 : 54)).toFixed(1) + '" pointer-events="none">drop dogs here</text>'); return o.join(''); }
     var top = y0 + 44, L = layoutChips(dogs.map(function (d) { return { label: short(d), name: d }; }), x1 - x0 - 20, y1 - top - 8);
     L.shown.forEach(function (it, i) {
       var c = i % L.cols, r = Math.floor(i / L.cols), cx = x0 + 10 + c * (L.cw + 6), cy = top + r * (L.ch + 6), g = sex(it.name), mid = cy + L.ch / 2;
@@ -357,7 +359,7 @@ textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(
     out.push('<g class="planned-g" id="plannedG"' + ($('showPlanned').checked ? '' : ' hidden') + ' pointer-events="none">' +
       seg([[413,17],[413,35]], 'var(--planned)', 6, '10 7') + seg([[413,207],[413,249]], 'var(--planned)', 6, '10 7') + seg([[233,100],[260,100]], 'var(--planned)', 6, '10 7') +
       seg([[544,207],[544,222]], 'var(--planned)', 6, '10 7') + seg([[544,222],[544,234]], 'var(--gate)', 8, '6 5') + seg([[544,234],[544,249]], 'var(--planned)', 6, '10 7') +
-      badge(mx(246), my(58) - 4, '1') + badge(mx(534), my(238), '2') + badge(mx(413) + 22, my(228), '3') + '</g>');
+      badge(mx(246), my(58) - 4, '1') + badge(mx(534), my(238), '2') + badge(mx(413), my(249) + 20, '3') + '</g>');
     out.push(mtext('Interlock', mx(430), 45, 'middle'), mtext('Driveway →', mx(150), my(295), 'start'), mtext('Parking lot ↓', mx(379), my(315), 'middle'));
     MZONES.forEach(function (z) { out.push(mzContent(z)); });
     $('plan').innerHTML = out.join('');
@@ -554,7 +556,7 @@ textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(
   });
 
   // "Begin with the current plan": reads the live New Haven Rooms tab and copies it as a starting point.
-  var ZONE_ALIAS = { planb: 'yardB', yardb: 'yardB', yarda: 'yardA', yardc: 'yardC', yardcinterlock: 'yardC', interlock: 'yardC', yardd: 'yardD', yarde: 'yardE', terrace: 'terrace' };
+  var ZONE_ALIAS = { planb: 'yardB', yardb: 'yardB', yarda: 'yardA', yardc: 'yardC1', yardcinterlock: 'yardC1', interlock: 'yardC1', yardc1: 'yardC1', yardc2: 'yardC2', interlockk: 'interlockK', yardd: 'yardD', yarde: 'yardE', terrace: 'terrace' };
   for (var rn = 1; rn <= 6; rn++) ZONE_ALIAS['room' + rn] = 'room' + rn;
   var curBusy = false;
   $('fromCurrent').addEventListener('click', function () {
@@ -598,7 +600,7 @@ textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(
   function save() {
     try { localStorage.setItem(STORE, JSON.stringify(S.place)); $('saved').textContent = Object.keys(S.place).length ? 'Saved on this device' : ''; } catch (e) {}
   }
-  function restore() { try { var v = JSON.parse(localStorage.getItem(STORE) || 'null'); if (v && typeof v === 'object') S.place = v; } catch (e) {} }
+  function restore() { try { var v = JSON.parse(localStorage.getItem(STORE) || 'null'); if (v && typeof v === 'object') { Object.keys(v).forEach(function (n) { if (v[n] === 'yardC') v[n] = 'yardC1'; }); S.place = v; } } catch (e) {} }
 
   // ---------- publishing ----------
   function currentPlan() {
@@ -741,7 +743,7 @@ textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(
       var place = b.place || {}, total = 0, inRooms = 0, rows = '';
       Object.keys(place).forEach(function (z) { var l = place[z] || []; total += l.length; if (z !== 'chosen') inRooms += l.length; });
       ROOMS.concat([{ id: 'chosen', name: 'Not in a room yet' }]).forEach(function (r) {
-        var l = place[r.id]; if (l && l.length) rows += '<li><b>' + esc(r.name) + ':</b> ' + l.map(function (n) { return esc(short(n)); }).join(', ') + '</li>';
+        var l = place[r.id] || (r.id === 'yardC1' ? place.yardC : null); if (l && l.length) rows += '<li><b>' + esc(r.name) + ':</b> ' + l.map(function (n) { return esc(short(n)); }).join(', ') + '</li>';
       });
       var when = b.time ? new Date(b.time).toLocaleDateString([], { day: 'numeric', month: 'short' }) : '';
       return '<article class="build"><h3>' + esc(b.title || 'Untitled plan') + '</h3><div class="small">' + (b.author ? 'by ' + esc(b.author) + ' · ' : '') + esc(when) + ' · ' + total + ' dogs, ' + inRooms + ' in rooms</div>' +
@@ -752,8 +754,9 @@ textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(
     var b = S.builds[+i]; if (!b) return;
     var before = JSON.stringify(S.place), next = {}, missing = 0;
     Object.keys(b.place || {}).forEach(function (z) {
-      if (z !== 'chosen' && !ROOM_NAME[z]) return;
-      (b.place[z] || []).forEach(function (n) { if (S.info[n]) next[n] = z; else missing++; });
+      var zz = z === 'yardC' ? 'yardC1' : z; // plans published before Yard C was split
+      if (zz !== 'chosen' && !ROOM_NAME[zz]) return;
+      (b.place[z] || []).forEach(function (n) { if (S.info[n]) next[n] = zz; else missing++; });
     });
     S.place = next; S.sel = null; S.undo = before; render();
     notice('Opened "' + (b.title || 'Untitled plan') + '" in the builder.' + (missing ? ' ' + missing + ' dog(s) are no longer in the list and were left out.' : ''), true, [{ label: 'Undo', fn: undo }]);

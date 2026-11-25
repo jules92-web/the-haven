@@ -38,7 +38,7 @@ Never edit the Google Sheet unless Julian explicitly asks.
 ## Shelter vocabulary
 
 - **New Haven**: the new central site. **Old Haven** and **Main Haven** are the existing ones. Dogs have a *current* and a *proposed* location in the Dog Database.
-- New Haven site plan terms: Rooms 1 to 6, Terrace, Kitchen, W.C., Storage (S), and the yards. **Plan B means Yard B.** "Yard C interlock" is the paved strip along the front of the house. Yards D and E continue downhill.
+- New Haven site plan terms: Rooms 1 to 6, Terrace, Kitchen, W.C., Storage (S), and the yards. **Plan B means Yard B.** The paved strip along the front of the house (formerly "Yard C interlock") is split by a planned gate into **Yard C1** (left) and **Yard C2** (right); **Interlock K** is the strip of interlock to the right of the Kitchen. All can hold dogs. Yards D and E continue downhill.
 - Planned (not built) fences and gates are drawn as purple dashed lines and labelled as planned.
 - Only vaccinated dogs go into the main haven.
 
