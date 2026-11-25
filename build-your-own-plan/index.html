@@ -211,14 +211,14 @@ textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(
     <div class="row" id="adminBox" hidden style="margin-top:8px"><input type="text" id="adminKey" placeholder="Admin key" style="max-width:240px;margin:0" autocomplete="off"><button type="button" class="btn" id="adminSave">Turn on admin mode</button></div>
   </section>
 
-  <section class="card" aria-label="Notes and comments">
-    <h2>Notes and comments on the current plan <span id="notesN"></span></h2>
-    <p class="small" style="margin-top:0">Anyone can read these, so please keep them kind and don't include phone numbers or private details. Your note is shared with everyone who opens this page.</p>
-    <label for="nText">Your note</label>
+  <section class="card" id="discussion" aria-label="Discussion">
+    <h2>Discussion <span id="notesN"></span></h2>
+    <p class="small" style="margin-top:0">Share ideas, questions and thoughts about the plan, or anything else about the Haven. Anyone can read these, so please keep them kind and don't include phone numbers or private details. Your message is shared with everyone who opens this page.</p>
+    <label for="nText">Your message</label>
     <textarea id="nText" maxlength="500" placeholder="e.g. Room 4 feels crowded with five dogs. Could Moofy go to the Terrace?"></textarea>
     <div class="pub"><div><label for="nAuthor">Your first name (optional)</label><input type="text" id="nAuthor" maxlength="40" autocomplete="off"></div>
       <div class="trap" aria-hidden="true"><label for="nWeb">Leave this empty</label><input type="text" id="nWeb" tabindex="-1" autocomplete="off"></div></div>
-    <div class="row"><button class="btn primary" id="postNote" type="button">Post note</button><span class="small" id="noteMsg" role="status"></span></div>
+    <div class="row"><button class="btn primary" id="postNote" type="button">Post message</button><span class="small" id="noteMsg" role="status"></span></div>
     <div class="notes" id="notes"></div>
   </section>
 </div>
@@ -681,20 +681,20 @@ textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(
   var noteBusy = false;
   function noteDel(n) {
     if (!(getMine()[n.id] || getAdmin())) return '';
-    if (S.confirmNote === n.id) return '<span class="small">Delete this note?</span> <button type="button" class="btn danger" data-ndelyes="' + esc(n.id) + '">Yes, delete</button> <button type="button" class="btn" data-ndelno="1">Keep it</button>';
-    return '<button type="button" class="btn" data-ndel="' + esc(n.id) + '">' + (getMine()[n.id] ? 'Delete my note' : 'Delete (admin)') + '</button>';
+    if (S.confirmNote === n.id) return '<span class="small">Delete this message?</span> <button type="button" class="btn danger" data-ndelyes="' + esc(n.id) + '">Yes, delete</button> <button type="button" class="btn" data-ndelno="1">Keep it</button>';
+    return '<button type="button" class="btn" data-ndel="' + esc(n.id) + '">' + (getMine()[n.id] ? 'Delete my message' : 'Delete (admin)') + '</button>';
   }
   function renderNotes() {
     $('notesN').textContent = S.notes.length ? '(' + S.notes.length + ')' : '';
     $('notes').innerHTML = S.notes.length ? S.notes.map(function (n) {
       var when = n.time ? new Date(n.time).toLocaleDateString([], { day: 'numeric', month: 'short' }) : '';
       return '<article class="note"><p>' + esc(n.text) + '</p><div class="small">' + (n.author ? esc(n.author) + ' · ' : '') + esc(when) + '</div><div class="del">' + noteDel(n) + '</div></article>';
-    }).join('') : '<p class="small" style="margin:0">' + (API ? 'No notes yet. Be the first to add one.' : "Notes aren't switched on yet.") + '</p>';
+    }).join('') : '<p class="small" style="margin:0">' + (API ? 'Nobody has posted yet. Be the first!' : "The discussion isn't switched on yet.") + '</p>';
   }
   $('postNote').addEventListener('click', function () {
     var text = $('nText').value.trim(), msg = $('noteMsg');
-    if (!API || SAMPLE) { msg.textContent = SAMPLE ? 'This is the sample page, so nothing is really posted.' : "Notes aren't switched on yet."; return; }
-    if (!text) { msg.textContent = 'Please write a note first.'; $('nText').focus(); return; }
+    if (!API || SAMPLE) { msg.textContent = SAMPLE ? 'This is the sample page, so nothing is really posted.' : "The discussion isn't switched on yet."; return; }
+    if (!text) { msg.textContent = 'Please write a message first.'; $('nText').focus(); return; }
     if (noteBusy) return;
     var id = rnd(6), code = rnd(10); noteBusy = true; $('postNote').disabled = true; msg.textContent = 'Posting…';
     fetch(API, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'note', id: id, code: code, text: text, author: $('nAuthor').value.trim(), website: $('nWeb').value }) })
@@ -711,7 +711,7 @@ textarea { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(
     postJson({ action: 'delete', kind: 'note', id: id, code: mine[id] || '', admin: getAdmin() }).then(function () {
       S.notes = S.notes.filter(function (n) { return n.id !== id; }); renderNotes();
       setTimeout(function () { loadBuilds().then(function () {
-        if (S.notes.some(function (n) { return n.id === id; })) $('noteMsg').textContent = "That note wasn't deleted. Only the person who wrote it (on the same phone or browser) or the Haven admin can delete it.";
+        if (S.notes.some(function (n) { return n.id === id; })) $('noteMsg').textContent = "That message wasn't deleted. Only the person who wrote it (on the same phone or browser) or the Haven admin can delete it.";
         else { var m = getMine(); delete m[id]; setMine(m); $('noteMsg').textContent = 'Deleted.'; }
       }); }, 3000);
     }).catch(function () { $('noteMsg').textContent = "Couldn't delete right now. Check your connection and try again."; renderNotes(); });
