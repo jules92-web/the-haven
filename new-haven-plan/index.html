@@ -234,7 +234,7 @@ svg text { font-family: 'Albert Sans', system-ui, sans-serif; }
     { id: 'yardE', name: 'Yard E', kind: 'yard', poly: [[570,233],[698,233],[698,439],[586,439],[570,249]], box: [592,240,694,436], note: 'continues ↓' },
     { id: 'yardC1', name: 'Yard C1', kind: 'strip', box: [262,209,411,247] },
     { id: 'yardC2', name: 'Yard C2', kind: 'strip', box: [415,209,542,247] },
-    { id: 'interlockK', name: 'Interlock K', kind: 'strip', short: 'Int. K', box: [546,84,568,205] },
+    { id: 'yardC3', name: 'Yard C3', kind: 'strip', box: [546,84,568,205] },
     { id: 'room3', name: 'Room 3', kind: 'room', rect: [260,35,334,145] },
     { id: 'room2', name: 'Room 2', kind: 'room', rect: [260,145,334,207] },
     { id: 'room1', name: 'Room 1', kind: 'room', rect: [334,35,413,180] },
@@ -250,7 +250,7 @@ svg text { font-family: 'Albert Sans', system-ui, sans-serif; }
   var ZONE_BY_ID = {};
   ZONES.forEach(function (z) { ZONE_BY_ID[z.id] = z; });
 
-  var ALIAS = { planb: 'yardB', yardb: 'yardB', yarda: 'yardA', yardc: 'yardC1', yardcinterlock: 'yardC1', interlock: 'yardC1', yardcinterlockstrip: 'yardC1', yardc1: 'yardC1', yardc2: 'yardC2', interlockk: 'interlockK', kinterlock: 'interlockK', yardd: 'yardD', darde: 'yardE', yarde: 'yardE',
+  var ALIAS = { planb: 'yardB', yardb: 'yardB', yarda: 'yardA', yardc: 'yardC1', yardcinterlock: 'yardC1', interlock: 'yardC1', yardcinterlockstrip: 'yardC1', yardc1: 'yardC1', yardc2: 'yardC2', interlockk: 'yardC3', yardc3: 'yardC3', kinterlock: 'interlockK', yardd: 'yardD', darde: 'yardE', yarde: 'yardE',
     terrace: 'terrace', kitchen: 'kitchen', k: 'kitchen', wc: 'wc', storage: 'storage', s: 'storage' };
   for (var n = 1; n <= 6; n++) ALIAS['room' + n] = 'room' + n;
   function zoneFor(header) {
